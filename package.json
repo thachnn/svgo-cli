@@ -16,24 +16,24 @@
     "type": "git",
     "url": "git://github.com/thachnn/svgo-cli.git"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/types.d.ts",
   "bin": {
-    "svgo": "cli.js"
+    "svgo": "dist/cli.js"
   },
   "files": [
-    "*.js",
-    "*.d.ts",
-    "!webpack.*.js"
+    "dist/",
+    "!webpack*.js"
   ],
   "engines": {
-    "node": ">=6.5"
+    "node": ">=8.3"
   },
   "dependencies": {
     "v8-compile-cache": "2"
   },
   "scripts": {
     "build": "node node_modules/webpack-cli/bin/cli.js --progress",
-    "clean": "node node_modules/rimraf/bin.js index.js cli.js node_modules/.cache"
+    "clean": "node node_modules/rimraf/bin.js dist/ node_modules/.cache"
   },
   "devDependencies": {
     "@babel/core": "thachnn/webpack-bundle#_babel/core-7.17.10",
