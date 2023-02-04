@@ -7,19 +7,13 @@ CLI bundle of [SVGO](https://github.com/svg/svgo), a Node.js-based tool for opti
 ## Installation
 
 ```sh
-npm -g install svgo-cli
-```
-
-or
-
-```sh
-yarn global add svgo-cli
+npm -g install svgo-cli@1
 ```
 
 ## Usage
 
 ```sh
-svgo one.svg two.svg -o one.min.svg two.min.svg
+svgo one.svg two.svg -o one.min.svg -o two.min.svg
 ```
 
 Or use the `--folder`/`-f` flag to optimize a whole folder of SVG icons
@@ -37,41 +31,55 @@ svgo --help
 ## Configuration
 
 Some options can be configured with CLI though it may be easier to have the configuration in a separate file.
-SVGO automatically loads configuration from `svgo.config.js` or module specified with `--config` flag.
+SVGO automatically loads configuration from YAML/JSON file specified with `--config` flag.
 
-```js
-module.exports = {
-  multipass: true, // boolean. false by default
-  js2svg: {
-    indent: 2, // string with spaces or number of spaces. 4 by default
-    pretty: true, // boolean, false by default
-  },
-  plugins: [
-    {
-      name: 'preset-default',
-      params: {
-        overrides: {
-          // customize options for plugins included in preset
-          convertPathData: {
-            noSpaceAfterFlags: false,
-          },
-          // or disable plugins
-          mergePaths: false,
-        },
-      },
-    },
-    // enable and configure builtin plugin not included in preset
-    {
-      name: 'sortAttrs',
-      params: {
-        xmlnsOrder: 'alphabetical',
-      },
-    },
-  ],
-};
+```yaml
+multipass: true
+
+plugins:
+  # customize options for plugins included in preset
+  - convertPathData:
+      noSpaceAfterFlags: false
+  # or disable plugins
+  - mergePaths: false
+  # enable and configure builtin plugin not included in preset
+  - sortAttrs:
+      xmlnsOrder: 'alphabetical'
+
+# configure the indent
+js2svg:
+  pretty: true
+  indent: 2
 ```
 
-For more details see [SVGO README Configuration](https://github.com/svg/svgo/blob/master/README.md#configuration).
+The configuration in JSON format:
+
+```json
+{
+  "multipass": true,
+  "plugins": [
+    {
+      "convertPathData": {
+        "noSpaceAfterFlags": false
+      }
+    },
+    {
+      "mergePaths": false
+    },
+    {
+      "sortAttrs": {
+        "xmlnsOrder": "alphabetical"
+      }
+    }
+  ],
+  "js2svg": {
+    "pretty": true,
+    "indent": 2
+  }
+}
+```
+
+For more details see [SVGO Default Configuration](https://github.com/svg/svgo/blob/v1.3.2/.svgo.yml).
 
 ## License
 
