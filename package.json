@@ -22,6 +22,7 @@
   },
   "files": [
     "dist/",
+    ".svgo.*",
     "!webpack*.js"
   ],
   "engines": {
@@ -36,15 +37,13 @@
   },
   "devDependencies": {
     "rimraf": "^2.2.8",
-    "string-replace-loader": "^3.0.0",
     "svgo": "^1.3.2",
     "webpack": "thachnn/webpack-bundle#v5.74.0",
     "webpack-cli": "thachnn/webpack-bundle#cli-4.10.0"
   },
   "resolutions": {
-    "**/schema-utils/ajv": "thachnn/webpack-bundle#ajv-6.12.6",
     "svgo/**/css-tree": "1.0.0-alpha.39",
-    "svgo/object.values": "npm:noop-package@1.0.0",
+    "svgo/object.values": "npm:blank-package@1.5.0",
     "svgo/util.promisify": "gabmontes/tiny-promisify#v0.1.1"
   }
 }

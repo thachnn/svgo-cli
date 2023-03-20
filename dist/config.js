@@ -153,312 +153,6 @@
         return stable;
       }();
     },
-    998: function(__unused_webpack_module, exports) {
-      "use strict";
-      exports.type = "perItem", exports.active = !1, exports.description = "removes viewBox attribute when possible";
-      var viewBoxElems = [ "svg", "pattern", "symbol" ];
-      exports.fn = function(item) {
-        if (item.isElem(viewBoxElems) && item.hasAttr("viewBox") && item.hasAttr("width") && item.hasAttr("height")) {
-          var nums = item.attr("viewBox").value.split(/[ ,]+/g);
-          "0" === nums[0] && "0" === nums[1] && item.attr("width").value.replace(/px$/, "") === nums[2] && item.attr("height").value.replace(/px$/, "") === nums[3] && item.removeAttr("viewBox");
-        }
-      };
-    },
-    9121: function(__unused_webpack_module, exports, __webpack_require__) {
-      "use strict";
-      exports.type = "perItem", exports.active = !0, exports.description = "optimizes path data: writes in shorter form, applies transformations", 
-      exports.params = {
-        applyTransforms: !0,
-        applyTransformsStroked: !0,
-        makeArcs: {
-          threshold: 2.5,
-          tolerance: .5
-        },
-        straightCurves: !0,
-        lineShorthands: !0,
-        curveSmoothShorthands: !1,
-        floatPrecision: 3,
-        transformPrecision: 5,
-        removeUseless: !0,
-        collapseRepeated: !0,
-        utilizeAbsolute: !0,
-        leadingZero: !0,
-        negativeExtraSpace: !0,
-        noSpaceAfterFlags: !1,
-        forceAbsolutePath: !1
-      };
-      var roundData, precision, error, arcThreshold, arcTolerance, hasMarkerMid, hasStrokeLinecap, pathElems = __webpack_require__(3193).pathElems, path2js = __webpack_require__(7050).path2js, js2path = __webpack_require__(7050).js2path, applyTransforms = __webpack_require__(7050).applyTransforms, cleanupOutData = __webpack_require__(8665).Kr;
-      function isConvex(data) {
-        var center = getIntersection([ 0, 0, data[2], data[3], data[0], data[1], data[4], data[5] ]);
-        return center && data[2] < center[0] == center[0] < 0 && data[3] < center[1] == center[1] < 0 && data[4] < center[0] == center[0] < data[0] && data[5] < center[1] == center[1] < data[1];
-      }
-      function getIntersection(coords) {
-        var a1 = coords[1] - coords[3], b1 = coords[2] - coords[0], c1 = coords[0] * coords[3] - coords[2] * coords[1], a2 = coords[5] - coords[7], b2 = coords[6] - coords[4], c2 = coords[4] * coords[7] - coords[5] * coords[6], denom = a1 * b2 - a2 * b1;
-        if (denom) {
-          var cross = [ (b1 * c2 - b2 * c1) / denom, (a1 * c2 - a2 * c1) / -denom ];
-          return !isNaN(cross[0]) && !isNaN(cross[1]) && isFinite(cross[0]) && isFinite(cross[1]) ? cross : void 0;
-        }
-      }
-      function strongRound(data) {
-        for (var i = data.length; i-- > 0; ) if (data[i].toFixed(precision) != data[i]) {
-          var rounded = +data[i].toFixed(precision - 1);
-          data[i] = +Math.abs(rounded - data[i]).toFixed(precision + 1) >= error ? +data[i].toFixed(precision) : rounded;
-        }
-        return data;
-      }
-      function round(data) {
-        for (var i = data.length; i-- > 0; ) data[i] = Math.round(data[i]);
-        return data;
-      }
-      function isCurveStraightLine(data) {
-        var i = data.length - 2, a = -data[i + 1], b = data[i], d = 1 / (a * a + b * b);
-        if (i <= 1 || !isFinite(d)) return !1;
-        for (;(i -= 2) >= 0; ) if (Math.sqrt(Math.pow(a * data[i] + b * data[i + 1], 2) * d) > error) return !1;
-        return !0;
-      }
-      function makeLonghand(item, data) {
-        switch (item.instruction) {
-         case "s":
-          item.instruction = "c";
-          break;
-
-         case "t":
-          item.instruction = "q";
-        }
-        return item.data.unshift(data[data.length - 2] - data[data.length - 4], data[data.length - 1] - data[data.length - 3]), 
-        item;
-      }
-      function getDistance(point1, point2) {
-        return Math.hypot(point1[0] - point2[0], point1[1] - point2[1]);
-      }
-      function getCubicBezierPoint(curve, t) {
-        var sqrT = t * t, cubT = sqrT * t, mt = 1 - t, sqrMt = mt * mt;
-        return [ 3 * sqrMt * t * curve[0] + 3 * mt * sqrT * curve[2] + cubT * curve[4], 3 * sqrMt * t * curve[1] + 3 * mt * sqrT * curve[3] + cubT * curve[5] ];
-      }
-      function isArc(curve, circle) {
-        var tolerance = Math.min(arcThreshold * error, arcTolerance * circle.radius / 100);
-        return [ 0, 1 / 4, .5, 3 / 4, 1 ].every((function(point) {
-          return Math.abs(getDistance(getCubicBezierPoint(curve, point), circle.center) - circle.radius) <= tolerance;
-        }));
-      }
-      function isArcPrev(curve, circle) {
-        return isArc(curve, {
-          center: [ circle.center[0] + curve[4], circle.center[1] + curve[5] ],
-          radius: circle.radius
-        });
-      }
-      function findArcAngle(curve, relCircle) {
-        var x1 = -relCircle.center[0], y1 = -relCircle.center[1], x2 = curve[4] - relCircle.center[0], y2 = curve[5] - relCircle.center[1];
-        return Math.acos((x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)));
-      }
-      function data2Path(params, pathData) {
-        return pathData.reduce((function(pathString, item) {
-          var strData = "";
-          return item.data && (strData = cleanupOutData(roundData(item.data.slice()), params)), 
-          pathString + item.instruction + strData;
-        }), "");
-      }
-      exports.fn = function(item, params) {
-        if (item.isElem(pathElems) && item.hasAttr("d")) {
-          precision = params.floatPrecision, error = !1 !== precision ? +Math.pow(.1, precision).toFixed(precision) : .01, 
-          roundData = precision > 0 && precision < 20 ? strongRound : round, params.makeArcs && (arcThreshold = params.makeArcs.threshold, 
-          arcTolerance = params.makeArcs.tolerance), hasMarkerMid = item.hasAttr("marker-mid");
-          var stroke = item.computedAttr("stroke"), strokeLinecap = item.computedAttr("stroke");
-          hasStrokeLinecap = stroke && "none" != stroke && strokeLinecap && "butt" != strokeLinecap;
-          var data = path2js(item);
-          data.length && (point = [ 0, 0 ], subpathPoint = [ 0, 0 ], (path = data).forEach((function(item, index) {
-            var instruction = item.instruction, data = item.data;
-            data ? ("mcslqta".indexOf(instruction) > -1 ? (point[0] += data[data.length - 2], 
-            point[1] += data[data.length - 1], "m" === instruction && (subpathPoint[0] = point[0], 
-            subpathPoint[1] = point[1], baseItem = item)) : "h" === instruction ? point[0] += data[0] : "v" === instruction && (point[1] += data[0]), 
-            "M" === instruction ? (index > 0 && (instruction = "m"), data[0] -= point[0], data[1] -= point[1], 
-            subpathPoint[0] = point[0] += data[0], subpathPoint[1] = point[1] += data[1], baseItem = item) : "LT".indexOf(instruction) > -1 ? (instruction = instruction.toLowerCase(), 
-            data[0] -= point[0], data[1] -= point[1], point[0] += data[0], point[1] += data[1]) : "C" === instruction ? (instruction = "c", 
-            data[0] -= point[0], data[1] -= point[1], data[2] -= point[0], data[3] -= point[1], 
-            data[4] -= point[0], data[5] -= point[1], point[0] += data[4], point[1] += data[5]) : "SQ".indexOf(instruction) > -1 ? (instruction = instruction.toLowerCase(), 
-            data[0] -= point[0], data[1] -= point[1], data[2] -= point[0], data[3] -= point[1], 
-            point[0] += data[2], point[1] += data[3]) : "A" === instruction ? (instruction = "a", 
-            data[5] -= point[0], data[6] -= point[1], point[0] += data[5], point[1] += data[6]) : "H" === instruction ? (instruction = "h", 
-            data[0] -= point[0], point[0] += data[0]) : "V" === instruction && (instruction = "v", 
-            data[0] -= point[1], point[1] += data[0]), item.instruction = instruction, item.data = data, 
-            item.coords = point.slice(-2)) : "z" == instruction && (baseItem && (item.coords = baseItem.coords), 
-            point[0] = subpathPoint[0], point[1] = subpathPoint[1]), item.base = index > 0 ? path[index - 1].coords : [ 0, 0 ];
-          })), params.applyTransforms && (data = applyTransforms(item, data, params)), data = function(path, params) {
-            var stringify = data2Path.bind(null, params), relSubpoint = [ 0, 0 ], pathBase = [ 0, 0 ], prev = {};
-            return path = path.filter((function(item, index, path) {
-              var instruction = item.instruction, data = item.data, next = path[index + 1];
-              if (data) {
-                var circle, sdata = data;
-                if ("s" === instruction && (sdata = [ 0, 0 ].concat(data), "cs".indexOf(prev.instruction) > -1)) {
-                  var pdata = prev.data, n = pdata.length;
-                  sdata[0] = pdata[n - 2] - pdata[n - 4], sdata[1] = pdata[n - 1] - pdata[n - 3];
-                }
-                if (params.makeArcs && ("c" == instruction || "s" == instruction) && isConvex(sdata) && (circle = function(curve) {
-                  var midPoint = getCubicBezierPoint(curve, .5), m1 = [ midPoint[0] / 2, midPoint[1] / 2 ], m2 = [ (midPoint[0] + curve[4]) / 2, (midPoint[1] + curve[5]) / 2 ], center = getIntersection([ m1[0], m1[1], m1[0] + m1[1], m1[1] - m1[0], m2[0], m2[1], m2[0] + (m2[1] - midPoint[1]), m2[1] - (m2[0] - midPoint[0]) ]), radius = center && getDistance([ 0, 0 ], center), tolerance = Math.min(arcThreshold * error, arcTolerance * radius / 100);
-                  if (center && radius < 1e15 && [ 1 / 4, 3 / 4 ].every((function(point) {
-                    return Math.abs(getDistance(getCubicBezierPoint(curve, point), center) - radius) <= tolerance;
-                  }))) return {
-                    center: center,
-                    radius: radius
-                  };
-                }(sdata))) {
-                  var nextLonghand, r = roundData([ circle.radius ])[0], angle = findArcAngle(sdata, circle), sweep = sdata[5] * sdata[0] - sdata[4] * sdata[1] > 0 ? 1 : 0, arc = {
-                    instruction: "a",
-                    data: [ r, r, 0, 0, sweep, sdata[4], sdata[5] ],
-                    coords: item.coords.slice(),
-                    base: item.base
-                  }, output = [ arc ], relCenter = [ circle.center[0] - sdata[4], circle.center[1] - sdata[5] ], relCircle = {
-                    center: relCenter,
-                    radius: circle.radius
-                  }, arcCurves = [ item ], hasPrev = 0, suffix = "";
-                  if ("c" == prev.instruction && isConvex(prev.data) && isArcPrev(prev.data, circle) || "a" == prev.instruction && prev.sdata && isArcPrev(prev.sdata, circle)) {
-                    arcCurves.unshift(prev), arc.base = prev.base, arc.data[5] = arc.coords[0] - arc.base[0], 
-                    arc.data[6] = arc.coords[1] - arc.base[1];
-                    var prevData = "a" == prev.instruction ? prev.sdata : prev.data;
-                    (angle += findArcAngle(prevData, {
-                      center: [ prevData[4] + circle.center[0], prevData[5] + circle.center[1] ],
-                      radius: circle.radius
-                    })) > Math.PI && (arc.data[3] = 1), hasPrev = 1;
-                  }
-                  for (var j = index; (next = path[++j]) && ~"cs".indexOf(next.instruction); ) {
-                    var nextData = next.data;
-                    if ("s" == next.instruction && (nextData = (nextLonghand = makeLonghand({
-                      instruction: "s",
-                      data: next.data.slice()
-                    }, path[j - 1].data)).data, nextLonghand.data = nextData.slice(0, 2), suffix = stringify([ nextLonghand ])), 
-                    !isConvex(nextData) || !isArc(nextData, relCircle)) break;
-                    if ((angle += findArcAngle(nextData, relCircle)) - 2 * Math.PI > .001) break;
-                    if (angle > Math.PI && (arc.data[3] = 1), arcCurves.push(next), !(2 * Math.PI - angle > .001)) {
-                      arc.data[5] = 2 * (relCircle.center[0] - nextData[4]), arc.data[6] = 2 * (relCircle.center[1] - nextData[5]), 
-                      arc.coords = [ arc.base[0] + arc.data[5], arc.base[1] + arc.data[6] ], arc = {
-                        instruction: "a",
-                        data: [ r, r, 0, 0, sweep, next.coords[0] - arc.coords[0], next.coords[1] - arc.coords[1] ],
-                        coords: next.coords,
-                        base: arc.coords
-                      }, output.push(arc), j++;
-                      break;
-                    }
-                    arc.coords = next.coords, arc.data[5] = arc.coords[0] - arc.base[0], arc.data[6] = arc.coords[1] - arc.base[1], 
-                    relCenter[0] -= nextData[4], relCenter[1] -= nextData[5];
-                  }
-                  if ((stringify(output) + suffix).length < stringify(arcCurves).length) {
-                    if (path[j] && "s" == path[j].instruction && makeLonghand(path[j], path[j - 1].data), 
-                    hasPrev) {
-                      var prevArc = output.shift();
-                      roundData(prevArc.data), relSubpoint[0] += prevArc.data[5] - prev.data[prev.data.length - 2], 
-                      relSubpoint[1] += prevArc.data[6] - prev.data[prev.data.length - 1], prev.instruction = "a", 
-                      prev.data = prevArc.data, item.base = prev.coords = prevArc.coords;
-                    }
-                    if (arc = output.shift(), 1 == arcCurves.length ? item.sdata = sdata.slice() : arcCurves.length - 1 - hasPrev > 0 && path.splice.apply(path, [ index + 1, arcCurves.length - 1 - hasPrev ].concat(output)), 
-                    !arc) return !1;
-                    instruction = "a", data = arc.data, item.coords = arc.coords;
-                  }
-                }
-                if (!1 !== precision) {
-                  if ("mltqsc".indexOf(instruction) > -1) for (var i = data.length; i--; ) data[i] += item.base[i % 2] - relSubpoint[i % 2]; else "h" == instruction ? data[0] += item.base[0] - relSubpoint[0] : "v" == instruction ? data[0] += item.base[1] - relSubpoint[1] : "a" == instruction && (data[5] += item.base[0] - relSubpoint[0], 
-                  data[6] += item.base[1] - relSubpoint[1]);
-                  roundData(data), "h" == instruction ? relSubpoint[0] += data[0] : "v" == instruction ? relSubpoint[1] += data[0] : (relSubpoint[0] += data[data.length - 2], 
-                  relSubpoint[1] += data[data.length - 1]), roundData(relSubpoint), "m" == instruction.toLowerCase() && (pathBase[0] = relSubpoint[0], 
-                  pathBase[1] = relSubpoint[1]);
-                }
-                if (params.straightCurves && ("c" === instruction && isCurveStraightLine(data) || "s" === instruction && isCurveStraightLine(sdata) ? (next && "s" == next.instruction && makeLonghand(next, data), 
-                instruction = "l", data = data.slice(-2)) : "q" === instruction && isCurveStraightLine(data) ? (next && "t" == next.instruction && makeLonghand(next, data), 
-                instruction = "l", data = data.slice(-2)) : "t" === instruction && "q" !== prev.instruction && "t" !== prev.instruction ? (instruction = "l", 
-                data = data.slice(-2)) : "a" !== instruction || 0 !== data[0] && 0 !== data[1] || (instruction = "l", 
-                data = data.slice(-2))), params.lineShorthands && "l" === instruction && (0 === data[1] ? (instruction = "h", 
-                data.pop()) : 0 === data[0] && (instruction = "v", data.shift())), params.collapseRepeated && !hasMarkerMid && "mhv".indexOf(instruction) > -1 && prev.instruction && instruction == prev.instruction.toLowerCase() && ("h" != instruction && "v" != instruction || prev.data[0] >= 0 == item.data[0] >= 0)) return prev.data[0] += data[0], 
-                "h" != instruction && "v" != instruction && (prev.data[1] += data[1]), prev.coords = item.coords, 
-                path[index] = prev, !1;
-                if (params.curveSmoothShorthands && prev.instruction && ("c" === instruction ? ("c" === prev.instruction && data[0] === -(prev.data[2] - prev.data[4]) && data[1] === -(prev.data[3] - prev.data[5]) || "s" === prev.instruction && data[0] === -(prev.data[0] - prev.data[2]) && data[1] === -(prev.data[1] - prev.data[3]) || -1 === "cs".indexOf(prev.instruction) && 0 === data[0] && 0 === data[1]) && (instruction = "s", 
-                data = data.slice(2)) : "q" === instruction && ("q" === prev.instruction && data[0] === prev.data[2] - prev.data[0] && data[1] === prev.data[3] - prev.data[1] || "t" === prev.instruction && data[2] === prev.data[0] && data[3] === prev.data[1]) && (instruction = "t", 
-                data = data.slice(2))), params.removeUseless && !hasStrokeLinecap) {
-                  if ("lhvqtcs".indexOf(instruction) > -1 && data.every((function(i) {
-                    return 0 === i;
-                  }))) return path[index] = prev, !1;
-                  if ("a" === instruction && 0 === data[5] && 0 === data[6]) return path[index] = prev, 
-                  !1;
-                }
-                item.instruction = instruction, item.data = data, prev = item;
-              } else {
-                if (relSubpoint[0] = pathBase[0], relSubpoint[1] = pathBase[1], "z" == prev.instruction) return !1;
-                prev = item;
-              }
-              return !0;
-            })), path;
-          }(data, params), params.utilizeAbsolute && (data = function(path, params) {
-            var prev = path[0];
-            return path = path.filter((function(item, index) {
-              if (0 == index) return !0;
-              if (!item.data) return prev = item, !0;
-              var instruction = item.instruction, data = item.data, adata = data && data.slice(0);
-              if ("mltqsc".indexOf(instruction) > -1) for (var i = adata.length; i--; ) adata[i] += item.base[i % 2]; else "h" == instruction ? adata[0] += item.base[0] : "v" == instruction ? adata[0] += item.base[1] : "a" == instruction && (adata[5] += item.base[0], 
-              adata[6] += item.base[1]);
-              roundData(adata);
-              var absoluteDataStr = cleanupOutData(adata, params), relativeDataStr = cleanupOutData(data, params);
-              return (params.forceAbsolutePath || absoluteDataStr.length < relativeDataStr.length && !(params.negativeExtraSpace && instruction == prev.instruction && prev.instruction.charCodeAt(0) > 96 && absoluteDataStr.length == relativeDataStr.length - 1 && (data[0] < 0 || /^0\./.test(data[0]) && prev.data[prev.data.length - 1] % 1))) && (item.instruction = instruction.toUpperCase(), 
-              item.data = adata), prev = item, !0;
-            })), path;
-          }(data, params)), js2path(item, data, params));
-        }
-        var path, baseItem, point, subpathPoint;
-      };
-    },
-    3233: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var PATH = __webpack_require__(1017);
-      function preparePluginsArray(config, plugins) {
-        var plugin, key;
-        return plugins.map((function(item) {
-          return "object" == typeof item ? "object" == typeof item[key = Object.keys(item)[0]] && item[key].fn && "function" == typeof item[key].fn ? plugin = setupCustomPlugin(key, item[key]) : (plugin = setPluginActiveState(loadPlugin(config, key, item[key].path), item, key)).name = key : ((plugin = loadPlugin(config, item)).name = item, 
-          "object" == typeof plugin.params && (plugin.params = Object.assign({}, plugin.params))), 
-          plugin;
-        }));
-      }
-      function setupCustomPlugin(name, plugin) {
-        return plugin.active = !0, plugin.params = Object.assign({}, plugin.params || {}), 
-        plugin.name = name, plugin;
-      }
-      function setPluginActiveState(plugin, item, key) {
-        return "object" == typeof item[key] ? (plugin.params = Object.assign({}, plugin.params || {}, item[key]), 
-        plugin.active = !0) : !1 === item[key] ? plugin.active = !1 : !0 === item[key] && (plugin.active = !0), 
-        plugin;
-      }
-      function loadPlugin(config, name, path) {
-        var plugin;
-        return plugin = path ? __webpack_require__(5965)(PATH.resolve(config.__DIR, path)) : __webpack_require__(9732)("./" + name), 
-        Object.assign({}, plugin);
-      }
-      module.exports = function(config) {
-        var defaults, prev;
-        return (config = "object" == typeof config && config || {}).plugins && !Array.isArray(config.plugins) ? {
-          error: "Error: Invalid plugins list. Provided 'plugins' in config should be an array."
-        } : (config.full ? (defaults = config, Array.isArray(defaults.plugins) && (defaults.plugins = preparePluginsArray(config, defaults.plugins))) : ((defaults = __webpack_require__(4088)).plugins = preparePluginsArray(config, defaults.plugins || []), 
-        defaults = function(defaults, config) {
-          var key;
-          config.plugins && config.plugins.forEach((function(item) {
-            "object" == typeof item && (key = Object.keys(item)[0], null == item[key] && console.error(`Error: '${key}' plugin is misconfigured! Have you padded its content in YML properly?\n`), 
-            "object" == typeof item[key] && item[key].fn && "function" == typeof item[key].fn ? defaults.plugins.push(setupCustomPlugin(key, item[key])) : "object" == typeof item[key] && item[key].path ? defaults.plugins.push(setPluginActiveState(loadPlugin(config, void 0, item[key].path), item, key)) : defaults.plugins.forEach((function(plugin) {
-              plugin.name === key && (plugin = setPluginActiveState(plugin, item, key));
-            })));
-          }));
-          defaults.multipass = config.multipass, config.svg2js && (defaults.svg2js = config.svg2js);
-          config.js2svg && (defaults.js2svg = config.js2svg);
-          return defaults;
-        }(defaults, config)), "floatPrecision" in config && Array.isArray(defaults.plugins) && defaults.plugins.forEach((function(plugin) {
-          plugin.params && "floatPrecision" in plugin.params && (plugin.params = Object.assign({}, plugin.params, {
-            floatPrecision: config.floatPrecision
-          }));
-        })), "datauri" in config && (defaults.datauri = config.datauri), Array.isArray(defaults.plugins) && (defaults.plugins = defaults.plugins.reduce((function(plugins, item) {
-          return prev && item.type == prev[0].type ? prev.push(item) : plugins.push(prev = [ item ]), 
-          plugins;
-        }), [])), defaults);
-      };
-    },
-    4088: function(module) {
-      module.exports = {
-        plugins: [ "removeDoctype", "removeXMLProcInst", "removeComments", "removeMetadata", "removeXMLNS", "removeEditorsNSData", "cleanupAttrs", "inlineStyles", "minifyStyles", "convertStyleToAttrs", "cleanupIDs", "prefixIds", "removeRasterImages", "removeUselessDefs", "cleanupNumericValues", "cleanupListOfValues", "convertColors", "removeUnknownsAndDefaults", "removeNonInheritableGroupAttrs", "removeUselessStrokeAndFill", "removeViewBox", "cleanupEnableBackground", "removeHiddenElems", "removeEmptyText", "convertShapeToPath", "convertEllipseToCircle", "moveElemsAttrsToGroup", "moveGroupAttrsToElems", "collapseGroups", "convertPathData", "convertTransform", "removeEmptyAttrs", "removeEmptyContainers", "mergePaths", "removeUnusedNS", "sortAttrs", "sortDefsChildren", "removeTitle", "removeDesc", "removeDimensions", "removeAttrs", "removeAttributesBySelector", "removeElementsByAttr", "addClassesToSVGElement", "removeStyleElement", "removeScriptElement", "addAttributesToSVGElement", "removeOffCanvasPaths", "reusePaths" ]
-      };
-    },
     9479: function(module, __unused_webpack_exports, __webpack_require__) {
       "use strict";
       var csstree = __webpack_require__(904), List = csstree.List, stable = __webpack_require__(5235), specificity = __webpack_require__(5509);
@@ -3387,8 +3081,8 @@
         "./convertColors.js": 1200,
         "./convertEllipseToCircle": 1009,
         "./convertEllipseToCircle.js": 1009,
-        "./convertPathData": 9121,
-        "./convertPathData.js": 9121,
+        "./convertPathData": 4801,
+        "./convertPathData.js": 4801,
         "./convertShapeToPath": 5221,
         "./convertShapeToPath.js": 5221,
         "./convertStyleToAttrs": 7601,
@@ -3453,8 +3147,8 @@
         "./removeUselessDefs.js": 6053,
         "./removeUselessStrokeAndFill": 7737,
         "./removeUselessStrokeAndFill.js": 7737,
-        "./removeViewBox": 998,
-        "./removeViewBox.js": 998,
+        "./removeViewBox": 8596,
+        "./removeViewBox.js": 8596,
         "./removeXMLNS": 5521,
         "./removeXMLNS.js": 5521,
         "./removeXMLProcInst": 305,
@@ -3489,13 +3183,310 @@
         str) : "";
       };
     },
+    8596: function(__unused_webpack_module, exports) {
+      "use strict";
+      exports.type = "perItem", exports.active = !1, exports.description = "removes viewBox attribute when possible";
+      var viewBoxElems = [ "svg", "pattern", "symbol" ];
+      exports.fn = function(item) {
+        if (item.isElem(viewBoxElems) && item.hasAttr("viewBox") && item.hasAttr("width") && item.hasAttr("height")) {
+          var nums = item.attr("viewBox").value.split(/[ ,]+/g);
+          "0" === nums[0] && "0" === nums[1] && item.attr("width").value.replace(/px$/, "") === nums[2] && item.attr("height").value.replace(/px$/, "") === nums[3] && item.removeAttr("viewBox");
+        }
+      };
+    },
+    4801: function(__unused_webpack_module, exports, __webpack_require__) {
+      "use strict";
+      exports.type = "perItem", exports.active = !0, exports.description = "optimizes path data: writes in shorter form, applies transformations", 
+      exports.params = {
+        applyTransforms: !0,
+        applyTransformsStroked: !0,
+        makeArcs: {
+          threshold: 2.5,
+          tolerance: .5
+        },
+        straightCurves: !0,
+        lineShorthands: !0,
+        curveSmoothShorthands: !1,
+        floatPrecision: 3,
+        transformPrecision: 5,
+        removeUseless: !0,
+        collapseRepeated: !0,
+        utilizeAbsolute: !0,
+        leadingZero: !0,
+        negativeExtraSpace: !0,
+        noSpaceAfterFlags: !1,
+        forceAbsolutePath: !1
+      };
+      var roundData, precision, error, arcThreshold, arcTolerance, hasMarkerMid, hasStrokeLinecap, pathElems = __webpack_require__(3193).pathElems, path2js = __webpack_require__(7050).path2js, js2path = __webpack_require__(7050).js2path, applyTransforms = __webpack_require__(7050).applyTransforms, cleanupOutData = __webpack_require__(8665).Kr;
+      function isConvex(data) {
+        var center = getIntersection([ 0, 0, data[2], data[3], data[0], data[1], data[4], data[5] ]);
+        return center && data[2] < center[0] == center[0] < 0 && data[3] < center[1] == center[1] < 0 && data[4] < center[0] == center[0] < data[0] && data[5] < center[1] == center[1] < data[1];
+      }
+      function getIntersection(coords) {
+        var a1 = coords[1] - coords[3], b1 = coords[2] - coords[0], c1 = coords[0] * coords[3] - coords[2] * coords[1], a2 = coords[5] - coords[7], b2 = coords[6] - coords[4], c2 = coords[4] * coords[7] - coords[5] * coords[6], denom = a1 * b2 - a2 * b1;
+        if (denom) {
+          var cross = [ (b1 * c2 - b2 * c1) / denom, (a1 * c2 - a2 * c1) / -denom ];
+          return !isNaN(cross[0]) && !isNaN(cross[1]) && isFinite(cross[0]) && isFinite(cross[1]) ? cross : void 0;
+        }
+      }
+      function strongRound(data) {
+        for (var i = data.length; i-- > 0; ) if (data[i].toFixed(precision) != data[i]) {
+          var rounded = +data[i].toFixed(precision - 1);
+          data[i] = +Math.abs(rounded - data[i]).toFixed(precision + 1) >= error ? +data[i].toFixed(precision) : rounded;
+        }
+        return data;
+      }
+      function round(data) {
+        for (var i = data.length; i-- > 0; ) data[i] = Math.round(data[i]);
+        return data;
+      }
+      function isCurveStraightLine(data) {
+        var i = data.length - 2, a = -data[i + 1], b = data[i], d = 1 / (a * a + b * b);
+        if (i <= 1 || !isFinite(d)) return !1;
+        for (;(i -= 2) >= 0; ) if (Math.sqrt(Math.pow(a * data[i] + b * data[i + 1], 2) * d) > error) return !1;
+        return !0;
+      }
+      function makeLonghand(item, data) {
+        switch (item.instruction) {
+         case "s":
+          item.instruction = "c";
+          break;
+
+         case "t":
+          item.instruction = "q";
+        }
+        return item.data.unshift(data[data.length - 2] - data[data.length - 4], data[data.length - 1] - data[data.length - 3]), 
+        item;
+      }
+      function getDistance(point1, point2) {
+        return Math.hypot(point1[0] - point2[0], point1[1] - point2[1]);
+      }
+      function getCubicBezierPoint(curve, t) {
+        var sqrT = t * t, cubT = sqrT * t, mt = 1 - t, sqrMt = mt * mt;
+        return [ 3 * sqrMt * t * curve[0] + 3 * mt * sqrT * curve[2] + cubT * curve[4], 3 * sqrMt * t * curve[1] + 3 * mt * sqrT * curve[3] + cubT * curve[5] ];
+      }
+      function isArc(curve, circle) {
+        var tolerance = Math.min(arcThreshold * error, arcTolerance * circle.radius / 100);
+        return [ 0, 1 / 4, .5, 3 / 4, 1 ].every((function(point) {
+          return Math.abs(getDistance(getCubicBezierPoint(curve, point), circle.center) - circle.radius) <= tolerance;
+        }));
+      }
+      function isArcPrev(curve, circle) {
+        return isArc(curve, {
+          center: [ circle.center[0] + curve[4], circle.center[1] + curve[5] ],
+          radius: circle.radius
+        });
+      }
+      function findArcAngle(curve, relCircle) {
+        var x1 = -relCircle.center[0], y1 = -relCircle.center[1], x2 = curve[4] - relCircle.center[0], y2 = curve[5] - relCircle.center[1];
+        return Math.acos((x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)));
+      }
+      function data2Path(params, pathData) {
+        return pathData.reduce((function(pathString, item) {
+          var strData = "";
+          return item.data && (strData = cleanupOutData(roundData(item.data.slice()), params)), 
+          pathString + item.instruction + strData;
+        }), "");
+      }
+      exports.fn = function(item, params) {
+        if (item.isElem(pathElems) && item.hasAttr("d")) {
+          precision = params.floatPrecision, error = !1 !== precision ? +Math.pow(.1, precision).toFixed(precision) : .01, 
+          roundData = precision > 0 && precision < 20 ? strongRound : round, params.makeArcs && (arcThreshold = params.makeArcs.threshold, 
+          arcTolerance = params.makeArcs.tolerance), hasMarkerMid = item.hasAttr("marker-mid");
+          var stroke = item.computedAttr("stroke"), strokeLinecap = item.computedAttr("stroke");
+          hasStrokeLinecap = stroke && "none" != stroke && strokeLinecap && "butt" != strokeLinecap;
+          var data = path2js(item);
+          data.length && (point = [ 0, 0 ], subpathPoint = [ 0, 0 ], (path = data).forEach((function(item, index) {
+            var instruction = item.instruction, data = item.data;
+            data ? ("mcslqta".indexOf(instruction) > -1 ? (point[0] += data[data.length - 2], 
+            point[1] += data[data.length - 1], "m" === instruction && (subpathPoint[0] = point[0], 
+            subpathPoint[1] = point[1], baseItem = item)) : "h" === instruction ? point[0] += data[0] : "v" === instruction && (point[1] += data[0]), 
+            "M" === instruction ? (index > 0 && (instruction = "m"), data[0] -= point[0], data[1] -= point[1], 
+            subpathPoint[0] = point[0] += data[0], subpathPoint[1] = point[1] += data[1], baseItem = item) : "LT".indexOf(instruction) > -1 ? (instruction = instruction.toLowerCase(), 
+            data[0] -= point[0], data[1] -= point[1], point[0] += data[0], point[1] += data[1]) : "C" === instruction ? (instruction = "c", 
+            data[0] -= point[0], data[1] -= point[1], data[2] -= point[0], data[3] -= point[1], 
+            data[4] -= point[0], data[5] -= point[1], point[0] += data[4], point[1] += data[5]) : "SQ".indexOf(instruction) > -1 ? (instruction = instruction.toLowerCase(), 
+            data[0] -= point[0], data[1] -= point[1], data[2] -= point[0], data[3] -= point[1], 
+            point[0] += data[2], point[1] += data[3]) : "A" === instruction ? (instruction = "a", 
+            data[5] -= point[0], data[6] -= point[1], point[0] += data[5], point[1] += data[6]) : "H" === instruction ? (instruction = "h", 
+            data[0] -= point[0], point[0] += data[0]) : "V" === instruction && (instruction = "v", 
+            data[0] -= point[1], point[1] += data[0]), item.instruction = instruction, item.data = data, 
+            item.coords = point.slice(-2)) : "z" == instruction && (baseItem && (item.coords = baseItem.coords), 
+            point[0] = subpathPoint[0], point[1] = subpathPoint[1]), item.base = index > 0 ? path[index - 1].coords : [ 0, 0 ];
+          })), params.applyTransforms && (data = applyTransforms(item, data, params)), data = function(path, params) {
+            var stringify = data2Path.bind(null, params), relSubpoint = [ 0, 0 ], pathBase = [ 0, 0 ], prev = {};
+            return path = path.filter((function(item, index, path) {
+              var instruction = item.instruction, data = item.data, next = path[index + 1];
+              if (data) {
+                var circle, sdata = data;
+                if ("s" === instruction && (sdata = [ 0, 0 ].concat(data), "cs".indexOf(prev.instruction) > -1)) {
+                  var pdata = prev.data, n = pdata.length;
+                  sdata[0] = pdata[n - 2] - pdata[n - 4], sdata[1] = pdata[n - 1] - pdata[n - 3];
+                }
+                if (params.makeArcs && ("c" == instruction || "s" == instruction) && isConvex(sdata) && (circle = function(curve) {
+                  var midPoint = getCubicBezierPoint(curve, .5), m1 = [ midPoint[0] / 2, midPoint[1] / 2 ], m2 = [ (midPoint[0] + curve[4]) / 2, (midPoint[1] + curve[5]) / 2 ], center = getIntersection([ m1[0], m1[1], m1[0] + m1[1], m1[1] - m1[0], m2[0], m2[1], m2[0] + (m2[1] - midPoint[1]), m2[1] - (m2[0] - midPoint[0]) ]), radius = center && getDistance([ 0, 0 ], center), tolerance = Math.min(arcThreshold * error, arcTolerance * radius / 100);
+                  if (center && radius < 1e15 && [ 1 / 4, 3 / 4 ].every((function(point) {
+                    return Math.abs(getDistance(getCubicBezierPoint(curve, point), center) - radius) <= tolerance;
+                  }))) return {
+                    center: center,
+                    radius: radius
+                  };
+                }(sdata))) {
+                  var nextLonghand, r = roundData([ circle.radius ])[0], angle = findArcAngle(sdata, circle), sweep = sdata[5] * sdata[0] - sdata[4] * sdata[1] > 0 ? 1 : 0, arc = {
+                    instruction: "a",
+                    data: [ r, r, 0, 0, sweep, sdata[4], sdata[5] ],
+                    coords: item.coords.slice(),
+                    base: item.base
+                  }, output = [ arc ], relCenter = [ circle.center[0] - sdata[4], circle.center[1] - sdata[5] ], relCircle = {
+                    center: relCenter,
+                    radius: circle.radius
+                  }, arcCurves = [ item ], hasPrev = 0, suffix = "";
+                  if ("c" == prev.instruction && isConvex(prev.data) && isArcPrev(prev.data, circle) || "a" == prev.instruction && prev.sdata && isArcPrev(prev.sdata, circle)) {
+                    arcCurves.unshift(prev), arc.base = prev.base, arc.data[5] = arc.coords[0] - arc.base[0], 
+                    arc.data[6] = arc.coords[1] - arc.base[1];
+                    var prevData = "a" == prev.instruction ? prev.sdata : prev.data;
+                    (angle += findArcAngle(prevData, {
+                      center: [ prevData[4] + circle.center[0], prevData[5] + circle.center[1] ],
+                      radius: circle.radius
+                    })) > Math.PI && (arc.data[3] = 1), hasPrev = 1;
+                  }
+                  for (var j = index; (next = path[++j]) && ~"cs".indexOf(next.instruction); ) {
+                    var nextData = next.data;
+                    if ("s" == next.instruction && (nextData = (nextLonghand = makeLonghand({
+                      instruction: "s",
+                      data: next.data.slice()
+                    }, path[j - 1].data)).data, nextLonghand.data = nextData.slice(0, 2), suffix = stringify([ nextLonghand ])), 
+                    !isConvex(nextData) || !isArc(nextData, relCircle)) break;
+                    if ((angle += findArcAngle(nextData, relCircle)) - 2 * Math.PI > .001) break;
+                    if (angle > Math.PI && (arc.data[3] = 1), arcCurves.push(next), !(2 * Math.PI - angle > .001)) {
+                      arc.data[5] = 2 * (relCircle.center[0] - nextData[4]), arc.data[6] = 2 * (relCircle.center[1] - nextData[5]), 
+                      arc.coords = [ arc.base[0] + arc.data[5], arc.base[1] + arc.data[6] ], arc = {
+                        instruction: "a",
+                        data: [ r, r, 0, 0, sweep, next.coords[0] - arc.coords[0], next.coords[1] - arc.coords[1] ],
+                        coords: next.coords,
+                        base: arc.coords
+                      }, output.push(arc), j++;
+                      break;
+                    }
+                    arc.coords = next.coords, arc.data[5] = arc.coords[0] - arc.base[0], arc.data[6] = arc.coords[1] - arc.base[1], 
+                    relCenter[0] -= nextData[4], relCenter[1] -= nextData[5];
+                  }
+                  if ((stringify(output) + suffix).length < stringify(arcCurves).length) {
+                    if (path[j] && "s" == path[j].instruction && makeLonghand(path[j], path[j - 1].data), 
+                    hasPrev) {
+                      var prevArc = output.shift();
+                      roundData(prevArc.data), relSubpoint[0] += prevArc.data[5] - prev.data[prev.data.length - 2], 
+                      relSubpoint[1] += prevArc.data[6] - prev.data[prev.data.length - 1], prev.instruction = "a", 
+                      prev.data = prevArc.data, item.base = prev.coords = prevArc.coords;
+                    }
+                    if (arc = output.shift(), 1 == arcCurves.length ? item.sdata = sdata.slice() : arcCurves.length - 1 - hasPrev > 0 && path.splice.apply(path, [ index + 1, arcCurves.length - 1 - hasPrev ].concat(output)), 
+                    !arc) return !1;
+                    instruction = "a", data = arc.data, item.coords = arc.coords;
+                  }
+                }
+                if (!1 !== precision) {
+                  if ("mltqsc".indexOf(instruction) > -1) for (var i = data.length; i--; ) data[i] += item.base[i % 2] - relSubpoint[i % 2]; else "h" == instruction ? data[0] += item.base[0] - relSubpoint[0] : "v" == instruction ? data[0] += item.base[1] - relSubpoint[1] : "a" == instruction && (data[5] += item.base[0] - relSubpoint[0], 
+                  data[6] += item.base[1] - relSubpoint[1]);
+                  roundData(data), "h" == instruction ? relSubpoint[0] += data[0] : "v" == instruction ? relSubpoint[1] += data[0] : (relSubpoint[0] += data[data.length - 2], 
+                  relSubpoint[1] += data[data.length - 1]), roundData(relSubpoint), "m" == instruction.toLowerCase() && (pathBase[0] = relSubpoint[0], 
+                  pathBase[1] = relSubpoint[1]);
+                }
+                if (params.straightCurves && ("c" === instruction && isCurveStraightLine(data) || "s" === instruction && isCurveStraightLine(sdata) ? (next && "s" == next.instruction && makeLonghand(next, data), 
+                instruction = "l", data = data.slice(-2)) : "q" === instruction && isCurveStraightLine(data) ? (next && "t" == next.instruction && makeLonghand(next, data), 
+                instruction = "l", data = data.slice(-2)) : "t" === instruction && "q" !== prev.instruction && "t" !== prev.instruction ? (instruction = "l", 
+                data = data.slice(-2)) : "a" !== instruction || 0 !== data[0] && 0 !== data[1] || (instruction = "l", 
+                data = data.slice(-2))), params.lineShorthands && "l" === instruction && (0 === data[1] ? (instruction = "h", 
+                data.pop()) : 0 === data[0] && (instruction = "v", data.shift())), params.collapseRepeated && !hasMarkerMid && "mhv".indexOf(instruction) > -1 && prev.instruction && instruction == prev.instruction.toLowerCase() && ("h" != instruction && "v" != instruction || prev.data[0] >= 0 == item.data[0] >= 0)) return prev.data[0] += data[0], 
+                "h" != instruction && "v" != instruction && (prev.data[1] += data[1]), prev.coords = item.coords, 
+                path[index] = prev, !1;
+                if (params.curveSmoothShorthands && prev.instruction && ("c" === instruction ? ("c" === prev.instruction && data[0] === -(prev.data[2] - prev.data[4]) && data[1] === -(prev.data[3] - prev.data[5]) || "s" === prev.instruction && data[0] === -(prev.data[0] - prev.data[2]) && data[1] === -(prev.data[1] - prev.data[3]) || -1 === "cs".indexOf(prev.instruction) && 0 === data[0] && 0 === data[1]) && (instruction = "s", 
+                data = data.slice(2)) : "q" === instruction && ("q" === prev.instruction && data[0] === prev.data[2] - prev.data[0] && data[1] === prev.data[3] - prev.data[1] || "t" === prev.instruction && data[2] === prev.data[0] && data[3] === prev.data[1]) && (instruction = "t", 
+                data = data.slice(2))), params.removeUseless && !hasStrokeLinecap) {
+                  if ("lhvqtcs".indexOf(instruction) > -1 && data.every((function(i) {
+                    return 0 === i;
+                  }))) return path[index] = prev, !1;
+                  if ("a" === instruction && 0 === data[5] && 0 === data[6]) return path[index] = prev, 
+                  !1;
+                }
+                item.instruction = instruction, item.data = data, prev = item;
+              } else {
+                if (relSubpoint[0] = pathBase[0], relSubpoint[1] = pathBase[1], "z" == prev.instruction) return !1;
+                prev = item;
+              }
+              return !0;
+            })), path;
+          }(data, params), params.utilizeAbsolute && (data = function(path, params) {
+            var prev = path[0];
+            return path = path.filter((function(item, index) {
+              if (0 == index) return !0;
+              if (!item.data) return prev = item, !0;
+              var instruction = item.instruction, data = item.data, adata = data && data.slice(0);
+              if ("mltqsc".indexOf(instruction) > -1) for (var i = adata.length; i--; ) adata[i] += item.base[i % 2]; else "h" == instruction ? adata[0] += item.base[0] : "v" == instruction ? adata[0] += item.base[1] : "a" == instruction && (adata[5] += item.base[0], 
+              adata[6] += item.base[1]);
+              roundData(adata);
+              var absoluteDataStr = cleanupOutData(adata, params), relativeDataStr = cleanupOutData(data, params);
+              return (params.forceAbsolutePath || absoluteDataStr.length < relativeDataStr.length && !(params.negativeExtraSpace && instruction == prev.instruction && prev.instruction.charCodeAt(0) > 96 && absoluteDataStr.length == relativeDataStr.length - 1 && (data[0] < 0 || /^0\./.test(data[0]) && prev.data[prev.data.length - 1] % 1))) && (item.instruction = instruction.toUpperCase(), 
+              item.data = adata), prev = item, !0;
+            })), path;
+          }(data, params)), js2path(item, data, params));
+        }
+        var path, baseItem, point, subpathPoint;
+      };
+    },
+    5263: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var FS = __webpack_require__(7147), PATH = __webpack_require__(1017), yaml = __webpack_require__(5251);
+      function preparePluginsArray(config, plugins) {
+        var plugin, key;
+        return plugins.map((function(item) {
+          return "object" == typeof item ? "object" == typeof item[key = Object.keys(item)[0]] && item[key].fn && "function" == typeof item[key].fn ? plugin = setupCustomPlugin(key, item[key]) : (plugin = setPluginActiveState(loadPlugin(config, key, item[key].path), item, key)).name = key : ((plugin = loadPlugin(config, item)).name = item, 
+          "object" == typeof plugin.params && (plugin.params = Object.assign({}, plugin.params))), 
+          plugin;
+        }));
+      }
+      function setupCustomPlugin(name, plugin) {
+        return plugin.active = !0, plugin.params = Object.assign({}, plugin.params || {}), 
+        plugin.name = name, plugin;
+      }
+      function setPluginActiveState(plugin, item, key) {
+        return "object" == typeof item[key] ? (plugin.params = Object.assign({}, plugin.params || {}, item[key]), 
+        plugin.active = !0) : !1 === item[key] ? plugin.active = !1 : !0 === item[key] && (plugin.active = !0), 
+        plugin;
+      }
+      function loadPlugin(config, name, path) {
+        var plugin;
+        return plugin = path ? require(PATH.resolve(config.__DIR, path)) : __webpack_require__(9732)("./" + name), 
+        Object.assign({}, plugin);
+      }
+      module.exports = function(config) {
+        var defaults, prev;
+        return (config = "object" == typeof config && config || {}).plugins && !Array.isArray(config.plugins) ? {
+          error: "Error: Invalid plugins list. Provided 'plugins' in config should be an array."
+        } : (config.full ? (defaults = config, Array.isArray(defaults.plugins) && (defaults.plugins = preparePluginsArray(config, defaults.plugins))) : ((defaults = Object.assign({}, yaml.safeLoad(FS.readFileSync(PATH.resolve(__dirname, "../.svgo.yml"), "utf8")))).plugins = preparePluginsArray(config, defaults.plugins || []), 
+        defaults = function(defaults, config) {
+          var key;
+          config.plugins && config.plugins.forEach((function(item) {
+            "object" == typeof item && (key = Object.keys(item)[0], null == item[key] && console.error(`Error: '${key}' plugin is misconfigured! Have you padded its content in YML properly?\n`), 
+            "object" == typeof item[key] && item[key].fn && "function" == typeof item[key].fn ? defaults.plugins.push(setupCustomPlugin(key, item[key])) : "object" == typeof item[key] && item[key].path ? defaults.plugins.push(setPluginActiveState(loadPlugin(config, void 0, item[key].path), item, key)) : defaults.plugins.forEach((function(plugin) {
+              plugin.name === key && (plugin = setPluginActiveState(plugin, item, key));
+            })));
+          }));
+          defaults.multipass = config.multipass, config.svg2js && (defaults.svg2js = config.svg2js);
+          config.js2svg && (defaults.js2svg = config.js2svg);
+          return defaults;
+        }(defaults, config)), "floatPrecision" in config && Array.isArray(defaults.plugins) && defaults.plugins.forEach((function(plugin) {
+          plugin.params && "floatPrecision" in plugin.params && (plugin.params = Object.assign({}, plugin.params, {
+            floatPrecision: config.floatPrecision
+          }));
+        })), "datauri" in config && (defaults.datauri = config.datauri), Array.isArray(defaults.plugins) && (defaults.plugins = defaults.plugins.reduce((function(plugins, item) {
+          return prev && item.type == prev[0].type ? prev.push(item) : plugins.push(prev = [ item ]), 
+          plugins;
+        }), [])), defaults);
+      };
+    },
     2565: function(module) {
       "use strict";
       module.exports = require("./index");
-    },
-    5965: function(module) {
-      "use strict";
-      module.exports = require;
     },
     5853: function(module) {
       "use strict";
@@ -3508,6 +3499,10 @@
     1944: function(module) {
       "use strict";
       module.exports = require("./vendor/csso");
+    },
+    5251: function(module) {
+      "use strict";
+      module.exports = require("./vendor/js-yaml");
     },
     7147: function(module) {
       "use strict";
@@ -3530,6 +3525,6 @@
   __webpack_require__.o = function(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
   };
-  var __webpack_exports__ = __webpack_require__(3233);
+  var __webpack_exports__ = __webpack_require__(5263);
   module.exports = __webpack_exports__;
 }();

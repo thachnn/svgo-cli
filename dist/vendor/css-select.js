@@ -709,6 +709,78 @@
         subselects.push(tokens);
       }
     },
+    6138: function(module, __unused_webpack_exports, __webpack_require__) {
+      var ElementType = __webpack_require__(4431), entities = __webpack_require__(1343), unencodedElements = {
+        __proto__: null,
+        style: !0,
+        script: !0,
+        xmp: !0,
+        iframe: !0,
+        noembed: !0,
+        noframes: !0,
+        plaintext: !0,
+        noscript: !0
+      };
+      var singleTag = {
+        __proto__: null,
+        area: !0,
+        base: !0,
+        basefont: !0,
+        br: !0,
+        col: !0,
+        command: !0,
+        embed: !0,
+        frame: !0,
+        hr: !0,
+        img: !0,
+        input: !0,
+        isindex: !0,
+        keygen: !0,
+        link: !0,
+        meta: !0,
+        param: !0,
+        source: !0,
+        track: !0,
+        wbr: !0
+      }, render = module.exports = function(dom, opts) {
+        Array.isArray(dom) || dom.cheerio || (dom = [ dom ]), opts = opts || {};
+        for (var output = "", i = 0; i < dom.length; i++) {
+          var elem = dom[i];
+          "root" === elem.type ? output += render(elem.children, opts) : ElementType.isTag(elem) ? output += renderTag(elem, opts) : elem.type === ElementType.Directive ? output += renderDirective(elem) : elem.type === ElementType.Comment ? output += renderComment(elem) : elem.type === ElementType.CDATA ? output += renderCdata(elem) : output += renderText(elem, opts);
+        }
+        return output;
+      };
+      function renderTag(elem, opts) {
+        "svg" === elem.name && (opts = {
+          decodeEntities: opts.decodeEntities,
+          xmlMode: !0
+        });
+        var tag = "<" + elem.name, attribs = function(attributes, opts) {
+          if (attributes) {
+            var value, output = "";
+            for (var key in attributes) output && (output += " "), output += key, (null !== (value = attributes[key]) && "" !== value || opts.xmlMode) && (output += '="' + (opts.decodeEntities ? entities.encodeXML(value) : value) + '"');
+            return output;
+          }
+        }(elem.attribs, opts);
+        return attribs && (tag += " " + attribs), !opts.xmlMode || elem.children && 0 !== elem.children.length ? (tag += ">", 
+        elem.children && (tag += render(elem.children, opts)), singleTag[elem.name] && !opts.xmlMode || (tag += "</" + elem.name + ">")) : tag += "/>", 
+        tag;
+      }
+      function renderDirective(elem) {
+        return "<" + elem.data + ">";
+      }
+      function renderText(elem, opts) {
+        var data = elem.data || "";
+        return !opts.decodeEntities || elem.parent && elem.parent.name in unencodedElements || (data = entities.encodeXML(data)), 
+        data;
+      }
+      function renderCdata(elem) {
+        return "<![CDATA[" + elem.children[0].data + "]]>";
+      }
+      function renderComment(elem) {
+        return "\x3c!--" + elem.data + "--\x3e";
+      }
+    },
     4431: function(module) {
       module.exports = {
         Text: "text",
@@ -907,7 +979,7 @@
       };
     },
     3346: function(module, __unused_webpack_exports, __webpack_require__) {
-      var ElementType = __webpack_require__(4431), getOuterHTML = __webpack_require__(376), isTag = ElementType.isTag;
+      var ElementType = __webpack_require__(4431), getOuterHTML = __webpack_require__(6138), isTag = ElementType.isTag;
       module.exports = {
         getInnerHTML: function(elem, opts) {
           return elem.children ? elem.children.map((function(elem) {
@@ -978,86 +1050,14 @@
       };
       var re_nthElement = /^([+\-]?\d*n)?\s*(?:([+\-]?)\s*(\d+))?$/;
     },
-    376: function(module, __unused_webpack_exports, __webpack_require__) {
-      var ElementType = __webpack_require__(4431), entities = __webpack_require__(1325), unencodedElements = {
-        __proto__: null,
-        style: !0,
-        script: !0,
-        xmp: !0,
-        iframe: !0,
-        noembed: !0,
-        noframes: !0,
-        plaintext: !0,
-        noscript: !0
-      };
-      var singleTag = {
-        __proto__: null,
-        area: !0,
-        base: !0,
-        basefont: !0,
-        br: !0,
-        col: !0,
-        command: !0,
-        embed: !0,
-        frame: !0,
-        hr: !0,
-        img: !0,
-        input: !0,
-        isindex: !0,
-        keygen: !0,
-        link: !0,
-        meta: !0,
-        param: !0,
-        source: !0,
-        track: !0,
-        wbr: !0
-      }, render = module.exports = function(dom, opts) {
-        Array.isArray(dom) || dom.cheerio || (dom = [ dom ]), opts = opts || {};
-        for (var output = "", i = 0; i < dom.length; i++) {
-          var elem = dom[i];
-          "root" === elem.type ? output += render(elem.children, opts) : ElementType.isTag(elem) ? output += renderTag(elem, opts) : elem.type === ElementType.Directive ? output += renderDirective(elem) : elem.type === ElementType.Comment ? output += renderComment(elem) : elem.type === ElementType.CDATA ? output += renderCdata(elem) : output += renderText(elem, opts);
-        }
-        return output;
-      };
-      function renderTag(elem, opts) {
-        "svg" === elem.name && (opts = {
-          decodeEntities: opts.decodeEntities,
-          xmlMode: !0
-        });
-        var tag = "<" + elem.name, attribs = function(attributes, opts) {
-          if (attributes) {
-            var value, output = "";
-            for (var key in attributes) output && (output += " "), output += key, (null !== (value = attributes[key]) && "" !== value || opts.xmlMode) && (output += '="' + (opts.decodeEntities ? entities.encodeXML(value) : value) + '"');
-            return output;
-          }
-        }(elem.attribs, opts);
-        return attribs && (tag += " " + attribs), !opts.xmlMode || elem.children && 0 !== elem.children.length ? (tag += ">", 
-        elem.children && (tag += render(elem.children, opts)), singleTag[elem.name] && !opts.xmlMode || (tag += "</" + elem.name + ">")) : tag += "/>", 
-        tag;
-      }
-      function renderDirective(elem) {
-        return "<" + elem.data + ">";
-      }
-      function renderText(elem, opts) {
-        var data = elem.data || "";
-        return !opts.decodeEntities || elem.parent && elem.parent.name in unencodedElements || (data = entities.encodeXML(data)), 
-        data;
-      }
-      function renderCdata(elem) {
-        return "<![CDATA[" + elem.children[0].data + "]]>";
-      }
-      function renderComment(elem) {
-        return "\x3c!--" + elem.data + "--\x3e";
-      }
-    },
-    1325: function(__unused_webpack_module, exports, __webpack_require__) {
+    1343: function(__unused_webpack_module, exports, __webpack_require__) {
       var inverse, single, multiple, obj, inverseXML = (obj = __webpack_require__(1344), 
       Object.keys(obj).sort().reduce((function(inverse, name) {
         return inverse[obj[name]] = "&" + name + ";", inverse;
       }), {})), xmlReplacer = (inverse = inverseXML, single = [], multiple = [], Object.keys(inverse).forEach((function(k) {
         1 === k.length ? single.push("\\" + k) : multiple.push(k);
       })), multiple.unshift("[" + single.join("") + "]"), new RegExp(multiple.join("|"), "g"));
-      exports.encodeXML = function(inverse, re) {
+      exports.encodeXML = exports.XML = function(inverse, re) {
         function func(name) {
           return inverse[name];
         }

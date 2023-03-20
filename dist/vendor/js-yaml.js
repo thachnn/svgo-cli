@@ -523,8 +523,8 @@
         }
       });
     },
-    2347: function(module, __unused_webpack_exports, __webpack_require__) {
-      var common = __webpack_require__(5596), YAMLException = __webpack_require__(4884), Mark = __webpack_require__(7334), DEFAULT_SAFE_SCHEMA = __webpack_require__(5972), _hasOwnProperty = Object.prototype.hasOwnProperty, PATTERN_NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/, PATTERN_NON_ASCII_LINE_BREAKS = /[\x85\u2028\u2029]/, PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/, PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i, PATTERN_TAG_URI = /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
+    2726: function(module, __unused_webpack_exports, __webpack_require__) {
+      var common = __webpack_require__(5596), YAMLException = __webpack_require__(4884), Mark = __webpack_require__(7334), DEFAULT_SAFE_SCHEMA = __webpack_require__(5972), DEFAULT_FULL_SCHEMA = module.exports.FAILSAFE_SCHEMA = __webpack_require__(5322), _hasOwnProperty = Object.prototype.hasOwnProperty, PATTERN_NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/, PATTERN_NON_ASCII_LINE_BREAKS = /[\x85\u2028\u2029]/, PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/, PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i, PATTERN_TAG_URI = /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
       function _class(obj) {
         return Object.prototype.toString.call(obj);
       }
@@ -553,7 +553,7 @@
       for (var simpleEscapeCheck = new Array(256), simpleEscapeMap = new Array(256), i = 0; i < 256; i++) simpleEscapeCheck[i] = simpleEscapeSequence(i) ? 1 : 0, 
       simpleEscapeMap[i] = simpleEscapeSequence(i);
       function State(input, options) {
-        this.input = input, this.filename = options.filename || null, this.schema = options.schema || DEFAULT_SAFE_SCHEMA, 
+        this.input = input, this.filename = options.filename || null, this.schema = options.schema || DEFAULT_FULL_SCHEMA, 
         this.onWarning = options.onWarning || null, this.legacy = options.legacy || !1, 
         this.json = options.json || !1, this.listener = options.listener || null, this.implicitTypes = this.schema.compiledImplicit, 
         this.typeMap = this.schema.compiledTypeMap, this.length = input.length, this.position = 0, 
@@ -886,6 +886,11 @@
         for (;state.position < state.length - 1; ) readDocument(state);
         return state.documents;
       }
+      function loadAll(input, iterator, options) {
+        var index, length, documents = loadDocuments(input, options);
+        if ("function" != typeof iterator) return documents;
+        for (index = 0, length = documents.length; index < length; index += 1) iterator(documents[index]);
+      }
       function load(input, options) {
         var documents = loadDocuments(input, options);
         if (0 !== documents.length) {
@@ -893,7 +898,14 @@
           throw new YAMLException("expected a single document in the stream, but found more");
         }
       }
-      module.exports.load = load, module.exports.safeLoad = function(input, options) {
+      module.exports.loadAll = loadAll, module.exports.load = load, module.exports.safeLoadAll = function(input, output, options) {
+        if ("function" != typeof output) return loadAll(input, common.extend({
+          schema: DEFAULT_SAFE_SCHEMA
+        }, options));
+        loadAll(input, output, common.extend({
+          schema: DEFAULT_SAFE_SCHEMA
+        }, options));
+      }, module.exports.safeLoad = function(input, options) {
         return load(input, common.extend({
           schema: DEFAULT_SAFE_SCHEMA
         }, options));
@@ -911,6 +923,6 @@
     };
     return __webpack_modules__[moduleId](module, module.exports, __webpack_require__), 
     module.exports;
-  }(2347);
+  }(2726);
   module.exports = __webpack_exports__;
 }();

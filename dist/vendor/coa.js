@@ -31,7 +31,7 @@
     },
     8503: function(module, __unused_webpack_exports, __webpack_require__) {
       "use strict";
-      const Q = __webpack_require__(8486);
+      const Q = __webpack_require__(6770);
       module.exports = class {
         constructor(cmd) {
           this._cmd = cmd, this._name = null, this._title = null, this._comp = null;
@@ -97,7 +97,7 @@
     },
     4714: function(module, __unused_webpack_exports, __webpack_require__) {
       "use strict";
-      const constants = __webpack_require__(2057), fs = __webpack_require__(7147), path = __webpack_require__(1017), Q = __webpack_require__(8486), shell = __webpack_require__(3048), escape = shell.escape, unescape = shell.unescape;
+      const constants = __webpack_require__(2057), fs = __webpack_require__(7147), path = __webpack_require__(1017), Q = __webpack_require__(6770), shell = __webpack_require__(3048), escape = shell.escape, unescape = shell.unescape;
       module.exports = function() {
         return this.title("Shell completion").helpful().arg().name("raw").title("Completion words").arr().end().act(((opts, args) => {
           if ("win32" === process.platform) {
@@ -152,7 +152,7 @@
     },
     594: function(module, __unused_webpack_exports, __webpack_require__) {
       "use strict";
-      const Q = __webpack_require__(8486), CoaParam = __webpack_require__(3965), chalk = __webpack_require__(4687);
+      const Q = __webpack_require__(6770), CoaParam = __webpack_require__(3965), chalk = __webpack_require__(4687);
       module.exports = class extends CoaParam {
         constructor(cmd) {
           super(cmd), this._short = null, this._long = null, this._flag = !1, this._only = !1, 
@@ -215,11 +215,8 @@
         }
       };
     },
-    8486: function(module) {
-      !function(definition) {
-        "use strict";
-        "function" == typeof bootstrap ? bootstrap("promise", definition) : module.exports = definition();
-      }((function() {
+    6770: function(module) {
+      module.exports = function() {
         "use strict";
         var hasStacks = !1;
         try {
@@ -313,12 +310,16 @@
           for (var key in object) object_hasOwnProperty(object, key) && keys.push(key);
           return keys;
         }, object_toString = uncurryThis(Object.prototype.toString);
+        function isObject(value) {
+          return value === Object(value);
+        }
         function isStopIteration(exception) {
           return "[object StopIteration]" === object_toString(exception) || exception instanceof QReturnValue;
         }
         QReturnValue = "undefined" != typeof ReturnValue ? ReturnValue : function(value) {
           this.value = value;
         };
+        var STACK_JUMP_SEPARATOR = "From previous event:";
         function makeStackTraceLong(error, promise) {
           if (hasStacks && promise.stack && "object" == typeof error && null !== error && error.stack) {
             for (var stacks = [], p = promise; p; p = p.source) p.stack && (!error.__minimumStackCounter__ || error.__minimumStackCounter__ > p.stackCounter) && (object_defineProperty(error, "__minimumStackCounter__", {
@@ -326,18 +327,19 @@
               configurable: !0
             }), stacks.unshift(p.stack));
             stacks.unshift(error.stack);
-            var stack = function(stackString) {
-              for (var lines = stackString.split("\n"), desiredLines = [], i = 0; i < lines.length; ++i) {
-                var line = lines[i];
-                isInternalFrame(line) || isNodeFrame(line) || !line || desiredLines.push(line);
-              }
-              return desiredLines.join("\n");
-            }(stacks.join("\nFrom previous event:\n"));
+            var stack = filterStackString(stacks.join("\n" + STACK_JUMP_SEPARATOR + "\n"));
             object_defineProperty(error, "stack", {
               value: stack,
               configurable: !0
             });
           }
+        }
+        function filterStackString(stackString) {
+          for (var lines = stackString.split("\n"), desiredLines = [], i = 0; i < lines.length; ++i) {
+            var line = lines[i];
+            isInternalFrame(line) || isNodeFrame(line) || !line || desiredLines.push(line);
+          }
+          return desiredLines.join("\n");
         }
         function isNodeFrame(stackLine) {
           return -1 !== stackLine.indexOf("(module.js:") || -1 !== stackLine.indexOf("(node.js:");
@@ -365,17 +367,14 @@
             return qFileName = fileNameAndLineNumber[0], fileNameAndLineNumber[1];
           }
         }
+        function deprecate(callback, name, alternative) {
+          return function() {
+            return "undefined" != typeof console && "function" == typeof console.warn && console.warn(name + " is deprecated, use " + alternative + " instead.", new Error("").stack), 
+            callback.apply(callback, arguments);
+          };
+        }
         function Q(value) {
-          return value instanceof Promise ? value : isPromiseAlike(value) ? function(promise) {
-            var deferred = defer();
-            return Q.nextTick((function() {
-              try {
-                promise.then(deferred.resolve, deferred.reject, deferred.notify);
-              } catch (exception) {
-                deferred.reject(exception);
-              }
-            })), deferred.promise;
-          }(value) : fulfill(value);
+          return value instanceof Promise ? value : isPromiseAlike(value) ? coerce(value) : fulfill(value);
         }
         Q.resolve = Q, Q.nextTick = nextTick, Q.longStackSupport = !1;
         var longStackCounter = 1;
@@ -476,8 +475,16 @@
           return object instanceof Promise;
         }
         function isPromiseAlike(object) {
-          return (value = object) === Object(value) && "function" == typeof object.then;
-          var value;
+          return isObject(object) && "function" == typeof object.then;
+        }
+        function isPending(object) {
+          return isPromise(object) && "pending" === object.inspect().state;
+        }
+        function isFulfilled(object) {
+          return !isPromise(object) || "fulfilled" === object.inspect().state;
+        }
+        function isRejected(object) {
+          return isPromise(object) && "rejected" === object.inspect().state;
         }
         "object" == typeof process && process && process.env && process.env.Q_DEBUG && (Q.longStackSupport = !0), 
         Q.defer = defer, defer.prototype.makeNodeResolver = function() {
@@ -503,34 +510,37 @@
           return "[object Promise]";
         }, Promise.prototype.then = function(fulfilled, rejected, progressed) {
           var self = this, deferred = defer(), done = !1;
+          function _fulfilled(value) {
+            try {
+              return "function" == typeof fulfilled ? fulfilled(value) : value;
+            } catch (exception) {
+              return reject(exception);
+            }
+          }
+          function _rejected(exception) {
+            if ("function" == typeof rejected) {
+              makeStackTraceLong(exception, self);
+              try {
+                return rejected(exception);
+              } catch (newException) {
+                return reject(newException);
+              }
+            }
+            return reject(exception);
+          }
+          function _progressed(value) {
+            return "function" == typeof progressed ? progressed(value) : value;
+          }
           return Q.nextTick((function() {
             self.promiseDispatch((function(value) {
-              done || (done = !0, deferred.resolve(function(value) {
-                try {
-                  return "function" == typeof fulfilled ? fulfilled(value) : value;
-                } catch (exception) {
-                  return reject(exception);
-                }
-              }(value)));
+              done || (done = !0, deferred.resolve(_fulfilled(value)));
             }), "when", [ function(exception) {
-              done || (done = !0, deferred.resolve(function(exception) {
-                if ("function" == typeof rejected) {
-                  makeStackTraceLong(exception, self);
-                  try {
-                    return rejected(exception);
-                  } catch (newException) {
-                    return reject(newException);
-                  }
-                }
-                return reject(exception);
-              }(exception)));
+              done || (done = !0, deferred.resolve(_rejected(exception)));
             } ]);
           })), self.promiseDispatch(void 0, "when", [ void 0, function(value) {
             var newValue, threw = !1;
             try {
-              newValue = function(value) {
-                return "function" == typeof progressed ? progressed(value) : value;
-              }(value);
+              newValue = _progressed(value);
             } catch (e) {
               if (threw = !0, !Q.onerror) throw e;
               Q.onerror(e);
@@ -556,36 +566,37 @@
         }, Q.thenReject = function(promise, reason) {
           return Q(promise).thenReject(reason);
         }, Q.nearer = nearer, Q.isPromise = isPromise, Q.isPromiseAlike = isPromiseAlike, 
-        Q.isPending = function(object) {
-          return isPromise(object) && "pending" === object.inspect().state;
-        }, Promise.prototype.isPending = function() {
+        Q.isPending = isPending, Promise.prototype.isPending = function() {
           return "pending" === this.inspect().state;
-        }, Q.isFulfilled = function(object) {
-          return !isPromise(object) || "fulfilled" === object.inspect().state;
-        }, Promise.prototype.isFulfilled = function() {
+        }, Q.isFulfilled = isFulfilled, Promise.prototype.isFulfilled = function() {
           return "fulfilled" === this.inspect().state;
-        }, Q.isRejected = function(object) {
-          return isPromise(object) && "rejected" === object.inspect().state;
-        }, Promise.prototype.isRejected = function() {
+        }, Q.isRejected = isRejected, Promise.prototype.isRejected = function() {
           return "rejected" === this.inspect().state;
         };
-        var callback, name, alternative, unhandledReasons = [], unhandledRejections = [], reportedUnhandledRejections = [], trackUnhandledRejections = !0;
+        var unhandledReasons = [], unhandledRejections = [], reportedUnhandledRejections = [], trackUnhandledRejections = !0;
         function resetUnhandledRejections() {
           unhandledReasons.length = 0, unhandledRejections.length = 0, trackUnhandledRejections || (trackUnhandledRejections = !0);
+        }
+        function trackRejection(promise, reason) {
+          trackUnhandledRejections && ("object" == typeof process && "function" == typeof process.emit && Q.nextTick.runAfter((function() {
+            -1 !== array_indexOf(unhandledRejections, promise) && (process.emit("unhandledRejection", reason, promise), 
+            reportedUnhandledRejections.push(promise));
+          })), unhandledRejections.push(promise), reason && void 0 !== reason.stack ? unhandledReasons.push(reason.stack) : unhandledReasons.push("(no stack) " + reason));
+        }
+        function untrackRejection(promise) {
+          if (trackUnhandledRejections) {
+            var at = array_indexOf(unhandledRejections, promise);
+            -1 !== at && ("object" == typeof process && "function" == typeof process.emit && Q.nextTick.runAfter((function() {
+              var atReport = array_indexOf(reportedUnhandledRejections, promise);
+              -1 !== atReport && (process.emit("rejectionHandled", unhandledReasons[at], promise), 
+              reportedUnhandledRejections.splice(atReport, 1));
+            })), unhandledRejections.splice(at, 1), unhandledReasons.splice(at, 1));
+          }
         }
         function reject(reason) {
           var rejection = Promise({
             when: function(rejected) {
-              return rejected && function(promise) {
-                if (trackUnhandledRejections) {
-                  var at = array_indexOf(unhandledRejections, promise);
-                  -1 !== at && ("object" == typeof process && "function" == typeof process.emit && Q.nextTick.runAfter((function() {
-                    var atReport = array_indexOf(reportedUnhandledRejections, promise);
-                    -1 !== atReport && (process.emit("rejectionHandled", unhandledReasons[at], promise), 
-                    reportedUnhandledRejections.splice(atReport, 1));
-                  })), unhandledRejections.splice(at, 1), unhandledReasons.splice(at, 1));
-                }
-              }(this), rejected ? rejected(reason) : this;
+              return rejected && untrackRejection(this), rejected ? rejected(reason) : this;
             }
           }, (function() {
             return this;
@@ -595,12 +606,7 @@
               reason: reason
             };
           }));
-          return function(promise, reason) {
-            trackUnhandledRejections && ("object" == typeof process && "function" == typeof process.emit && Q.nextTick.runAfter((function() {
-              -1 !== array_indexOf(unhandledRejections, promise) && (process.emit("unhandledRejection", reason, promise), 
-              reportedUnhandledRejections.push(promise));
-            })), unhandledRejections.push(promise), reason && void 0 !== reason.stack ? unhandledReasons.push(reason.stack) : unhandledReasons.push("(no stack) " + reason));
-          }(rejection, reason), rejection;
+          return trackRejection(rejection, reason), rejection;
         }
         function fulfill(value) {
           return Promise({
@@ -632,8 +638,63 @@
             };
           }));
         }
+        function coerce(promise) {
+          var deferred = defer();
+          return Q.nextTick((function() {
+            try {
+              promise.then(deferred.resolve, deferred.reject, deferred.notify);
+            } catch (exception) {
+              deferred.reject(exception);
+            }
+          })), deferred.promise;
+        }
+        function master(object) {
+          return Promise({
+            isDef: function() {}
+          }, (function(op, args) {
+            return dispatch(object, op, args);
+          }), (function() {
+            return Q(object).inspect();
+          }));
+        }
         function spread(value, fulfilled, rejected) {
           return Q(value).spread(fulfilled, rejected);
+        }
+        function async(makeGenerator) {
+          return function() {
+            function continuer(verb, arg) {
+              var result;
+              if ("undefined" == typeof StopIteration) {
+                try {
+                  result = generator[verb](arg);
+                } catch (exception) {
+                  return reject(exception);
+                }
+                return result.done ? Q(result.value) : when(result.value, callback, errback);
+              }
+              try {
+                result = generator[verb](arg);
+              } catch (exception) {
+                return isStopIteration(exception) ? Q(exception.value) : reject(exception);
+              }
+              return when(result, callback, errback);
+            }
+            var generator = makeGenerator.apply(this, arguments), callback = continuer.bind(continuer, "next"), errback = continuer.bind(continuer, "throw");
+            return callback();
+          };
+        }
+        function spawn(makeGenerator) {
+          Q.done(Q.async(makeGenerator)());
+        }
+        function _return(value) {
+          throw new QReturnValue(value);
+        }
+        function promised(callback) {
+          return function() {
+            return spread([ this, all(arguments) ], (function(self, args) {
+              return callback.apply(self, args);
+            }));
+          };
         }
         function dispatch(object, op, args) {
           return Q(object).dispatch(op, args);
@@ -660,20 +721,23 @@
           var deferred = Q.defer(), pendingCount = 0;
           return array_reduce(promises, (function(prev, current, index) {
             var promise = promises[index];
-            pendingCount++, when(promise, (function(result) {
+            function onFulfilled(result) {
               deferred.resolve(result);
-            }), (function(err) {
-              if (0 === --pendingCount) {
+            }
+            function onRejected(err) {
+              if (0 == --pendingCount) {
                 var rejection = err || new Error("" + err);
                 rejection.message = "Q can't get fulfillment value from any promise, all promises were rejected. Last error message: " + rejection.message, 
                 deferred.reject(rejection);
               }
-            }), (function(progress) {
+            }
+            function onProgress(progress) {
               deferred.notify({
                 index: index,
                 value: progress
               });
-            }));
+            }
+            pendingCount++, when(promise, onFulfilled, onRejected, onProgress);
           }), void 0), deferred.promise;
         }
         function allResolved(promises) {
@@ -685,55 +749,26 @@
             }));
           }));
         }
+        function allSettled(promises) {
+          return Q(promises).allSettled();
+        }
+        function progress(object, progressed) {
+          return Q(object).then(void 0, void 0, progressed);
+        }
+        function nodeify(object, nodeback) {
+          return Q(object).nodeify(nodeback);
+        }
         Q.resetUnhandledRejections = resetUnhandledRejections, Q.getUnhandledReasons = function() {
           return unhandledReasons.slice();
         }, Q.stopUnhandledRejectionTracking = function() {
           resetUnhandledRejections(), trackUnhandledRejections = !1;
-        }, resetUnhandledRejections(), Q.reject = reject, Q.fulfill = fulfill, Q.master = function(object) {
-          return Promise({
-            isDef: function() {}
-          }, (function(op, args) {
-            return dispatch(object, op, args);
-          }), (function() {
-            return Q(object).inspect();
-          }));
-        }, Q.spread = spread, Promise.prototype.spread = function(fulfilled, rejected) {
+        }, resetUnhandledRejections(), Q.reject = reject, Q.fulfill = fulfill, Q.master = master, 
+        Q.spread = spread, Promise.prototype.spread = function(fulfilled, rejected) {
           return this.all().then((function(array) {
             return fulfilled.apply(void 0, array);
           }), rejected);
-        }, Q.async = function(makeGenerator) {
-          return function() {
-            function continuer(verb, arg) {
-              var result;
-              if ("undefined" == typeof StopIteration) {
-                try {
-                  result = generator[verb](arg);
-                } catch (exception) {
-                  return reject(exception);
-                }
-                return result.done ? Q(result.value) : when(result.value, callback, errback);
-              }
-              try {
-                result = generator[verb](arg);
-              } catch (exception) {
-                return isStopIteration(exception) ? Q(exception.value) : reject(exception);
-              }
-              return when(result, callback, errback);
-            }
-            var generator = makeGenerator.apply(this, arguments), callback = continuer.bind(continuer, "next"), errback = continuer.bind(continuer, "throw");
-            return callback();
-          };
-        }, Q.spawn = function(makeGenerator) {
-          Q.done(Q.async(makeGenerator)());
-        }, Q.return = function(value) {
-          throw new QReturnValue(value);
-        }, Q.promised = function(callback) {
-          return function() {
-            return spread([ this, all(arguments) ], (function(self, args) {
-              return callback.apply(self, args);
-            }));
-          };
-        }, Q.dispatch = dispatch, Promise.prototype.dispatch = function(op, args) {
+        }, Q.async = async, Q.spawn = spawn, Q.return = _return, Q.promised = promised, 
+        Q.dispatch = dispatch, Promise.prototype.dispatch = function(op, args) {
           var self = this, deferred = defer();
           return Q.nextTick((function() {
             self.promiseDispatch(deferred.resolve, op, args);
@@ -784,15 +819,9 @@
           return all(this);
         }, Q.any = any, Promise.prototype.any = function() {
           return any(this);
-        }, Q.allResolved = (callback = allResolved, name = "allResolved", alternative = "allSettled", 
-        function() {
-          return "undefined" != typeof console && "function" == typeof console.warn && console.warn(name + " is deprecated, use " + alternative + " instead.", new Error("").stack), 
-          callback.apply(callback, arguments);
-        }), Promise.prototype.allResolved = function() {
+        }, Q.allResolved = deprecate(allResolved, "allResolved", "allSettled"), Promise.prototype.allResolved = function() {
           return allResolved(this);
-        }, Q.allSettled = function(promises) {
-          return Q(promises).allSettled();
-        }, Promise.prototype.allSettled = function() {
+        }, Q.allSettled = allSettled, Promise.prototype.allSettled = function() {
           return this.then((function(promises) {
             return all(array_map(promises, (function(promise) {
               function regardless() {
@@ -805,9 +834,7 @@
           return Q(object).then(void 0, rejected);
         }, Promise.prototype.fail = Promise.prototype.catch = function(rejected) {
           return this.then(void 0, rejected);
-        }, Q.progress = function(object, progressed) {
-          return Q(object).then(void 0, void 0, progressed);
-        }, Promise.prototype.progress = function(progressed) {
+        }, Q.progress = progress, Promise.prototype.progress = function(progressed) {
           return this.then(void 0, void 0, progressed);
         }, Q.fin = Q.finally = function(object, callback) {
           return Q(object).finally(callback);
@@ -905,9 +932,7 @@
           var nodeArgs = array_slice(arguments, 1), deferred = defer();
           return nodeArgs.push(deferred.makeNodeResolver()), this.dispatch("post", [ name, nodeArgs ]).fail(deferred.reject), 
           deferred.promise;
-        }, Q.nodeify = function(object, nodeback) {
-          return Q(object).nodeify(nodeback);
-        }, Promise.prototype.nodeify = function(nodeback) {
+        }, Q.nodeify = nodeify, Promise.prototype.nodeify = function(nodeback) {
           if (!nodeback) return this;
           this.then((function(value) {
             Q.nextTick((function() {
@@ -923,11 +948,11 @@
         };
         var qEndingLine = captureLine();
         return Q;
-      }));
+      }();
     },
-    2384: function(module, __unused_webpack_exports, __webpack_require__) {
+    7390: function(module, __unused_webpack_exports, __webpack_require__) {
       "use strict";
-      const UTIL = __webpack_require__(3837), PATH = __webpack_require__(1017), EOL = __webpack_require__(2037).EOL, Q = __webpack_require__(8486), chalk = __webpack_require__(4687), CoaObject = __webpack_require__(8503), Opt = __webpack_require__(594), Arg = __webpack_require__(7283), completion = __webpack_require__(4714);
+      const UTIL = __webpack_require__(3837), PATH = __webpack_require__(1017), EOL = __webpack_require__(2037).EOL, Q = __webpack_require__(6770), chalk = __webpack_require__(4687), CoaObject = __webpack_require__(8503), Opt = __webpack_require__(594), Arg = __webpack_require__(7283), completion = __webpack_require__(4714);
       class Cmd extends CoaObject {
         constructor(cmd) {
           super(cmd), this._parent(cmd), this._cmds = [], this._cmdsByName = {}, this._opts = [], 
@@ -1031,7 +1056,7 @@
               } else "string" == typeof this._ext && (pkg = ~this._ext.indexOf("%s") ? UTIL.format(this._ext, i) : this._ext + i);
               let cmdDesc;
               try {
-                cmdDesc = __webpack_require__(5965)(pkg);
+                cmdDesc = require(pkg);
               } catch (e) {}
               if (cmdDesc) {
                 if ("function" == typeof cmdDesc) this.cmd().name(i).apply(cmdDesc).end(); else {
@@ -1121,8 +1146,8 @@
         return this._do(this._parseArr(argv || []));
       }, module.exports = Cmd;
     },
-    5079: function(module, __unused_webpack_exports, __webpack_require__) {
-      const Cmd = __webpack_require__(2384), Opt = __webpack_require__(594), Arg = __webpack_require__(7283), shell = __webpack_require__(3048);
+    3561: function(module, __unused_webpack_exports, __webpack_require__) {
+      const Cmd = __webpack_require__(7390), Opt = __webpack_require__(594), Arg = __webpack_require__(7283), shell = __webpack_require__(3048);
       module.exports = {
         Cmd: Cmd.create,
         Opt: Opt.create,
@@ -1133,12 +1158,8 @@
           Arg: Arg
         },
         shell: shell,
-        require: __webpack_require__(5965)
+        require: require
       };
-    },
-    5965: function(module) {
-      "use strict";
-      module.exports = require;
     },
     4687: function(module) {
       "use strict";
@@ -1173,6 +1194,6 @@
     };
     return __webpack_modules__[moduleId](module, module.exports, __webpack_require__), 
     module.exports;
-  }(5079);
+  }(3561);
   module.exports = __webpack_exports__;
 }();

@@ -41,9 +41,55 @@ require("v8-compile-cache"), function() {
         return made;
       };
     },
-    635: function(module, __unused_webpack_exports, __webpack_require__) {
+    8665: function(__unused_webpack_module, exports, __webpack_require__) {
       "use strict";
-      var svgo, FS = __webpack_require__(7147), PATH = __webpack_require__(1017), chalk = __webpack_require__(4687), mkdirp = __webpack_require__(1890), promisify = __webpack_require__(3837).promisify || __webpack_require__(8159), readdir = FS.promises ? FS.promises.readdir : promisify(FS.readdir), readFile = FS.promises ? FS.promises.readFile : promisify(FS.readFile), writeFile = FS.promises ? FS.promises.writeFile : promisify(FS.writeFile), SVGO = __webpack_require__(2565), YAML = __webpack_require__(5251), PKG = __webpack_require__(4318), encodeSVGDatauri = __webpack_require__(8665).By, decodeSVGDatauri = __webpack_require__(8665).rs, checkIsDir = __webpack_require__(8665).m3, regSVGFile = /\.svg$/, noop = () => {};
+      var FS = __webpack_require__(7147);
+      exports.By = function(str, type) {
+        var prefix = "data:image/svg+xml";
+        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : (prefix += ";base64,", 
+        str = Buffer.from ? prefix + Buffer.from(str).toString("base64") : prefix + new Buffer(str).toString("base64")), 
+        str;
+      }, exports.rs = function(str) {
+        var match = /data:image\/svg\+xml(;charset=[^;,]*)?(;base64)?,(.*)/.exec(str);
+        if (!match) return str;
+        var data = match[3];
+        return match[2] ? str = new Buffer(data, "base64").toString("utf8") : "%" === data.charAt(0) ? str = decodeURIComponent(data) : "<" === data.charAt(0) && (str = data), 
+        str;
+      };
+      var removeLeadingZero = function(num) {
+        var strNum = num.toString();
+        return 0 < num && num < 1 && 48 == strNum.charCodeAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && 48 == strNum.charCodeAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
+        strNum;
+      };
+      exports.m3 = function(path) {
+        try {
+          return FS.lstatSync(path).isDirectory();
+        } catch (e) {
+          return !1;
+        }
+      };
+    },
+    8159: function(module) {
+      "use strict";
+      module.exports = function(fn, options) {
+        if ("function" != typeof fn) throw new TypeError("first parameter is not a function");
+        const opts = Object.assign({
+          context: {},
+          multiArgs: !1
+        }, options);
+        return function() {
+          const callArgs = Array.prototype.slice.call(arguments);
+          return new Promise((function(resolve, reject) {
+            callArgs.push((function(err) {
+              err ? reject(err) : opts.multiArgs ? resolve(Array.prototype.slice.call(arguments, 1)) : resolve(arguments[1]);
+            })), fn.apply(opts.context, callArgs);
+          }));
+        };
+      };
+    },
+    2849: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var svgo, FS = __webpack_require__(7147), PATH = __webpack_require__(1017), chalk = __webpack_require__(4687), mkdirp = __webpack_require__(1890), promisify = __webpack_require__(3837).promisify || __webpack_require__(8159), readdir = FS.promises ? FS.promises.readdir : promisify(FS.readdir), readFile = FS.promises ? FS.promises.readFile : promisify(FS.readFile), writeFile = FS.promises ? FS.promises.writeFile : promisify(FS.writeFile), SVGO = __webpack_require__(2565), YAML = __webpack_require__(5251), PKG = __webpack_require__(6485), encodeSVGDatauri = __webpack_require__(8665).By, decodeSVGDatauri = __webpack_require__(8665).rs, checkIsDir = __webpack_require__(8665).m3, regSVGFile = /\.svg$/, noop = () => {};
       function changePluginsState(names, state, config) {
         if (names.forEach(flattenPluginsCbk), config.plugins) for (var name of names) {
           var key, matched = !1;
@@ -185,52 +231,6 @@ require("v8-compile-cache"), function() {
         }
       }));
     },
-    8665: function(__unused_webpack_module, exports, __webpack_require__) {
-      "use strict";
-      var FS = __webpack_require__(7147);
-      exports.By = function(str, type) {
-        var prefix = "data:image/svg+xml";
-        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : (prefix += ";base64,", 
-        str = Buffer.from ? prefix + Buffer.from(str).toString("base64") : prefix + new Buffer(str).toString("base64")), 
-        str;
-      }, exports.rs = function(str) {
-        var match = /data:image\/svg\+xml(;charset=[^;,]*)?(;base64)?,(.*)/.exec(str);
-        if (!match) return str;
-        var data = match[3];
-        return match[2] ? str = new Buffer(data, "base64").toString("utf8") : "%" === data.charAt(0) ? str = decodeURIComponent(data) : "<" === data.charAt(0) && (str = data), 
-        str;
-      };
-      var removeLeadingZero = function(num) {
-        var strNum = num.toString();
-        return 0 < num && num < 1 && 48 == strNum.charCodeAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && 48 == strNum.charCodeAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
-        strNum;
-      };
-      exports.m3 = function(path) {
-        try {
-          return FS.lstatSync(path).isDirectory();
-        } catch (e) {
-          return !1;
-        }
-      };
-    },
-    8159: function(module) {
-      "use strict";
-      module.exports = function(fn, options) {
-        if ("function" != typeof fn) throw new TypeError("first parameter is not a function");
-        const opts = Object.assign({
-          context: {},
-          multiArgs: !1
-        }, options);
-        return function() {
-          const callArgs = Array.prototype.slice.call(arguments);
-          return new Promise((function(resolve, reject) {
-            callArgs.push((function(err) {
-              err ? reject(err) : opts.multiArgs ? resolve(Array.prototype.slice.call(arguments, 1)) : resolve(arguments[1]);
-            })), fn.apply(opts.context, callArgs);
-          }));
-        };
-      };
-    },
     2565: function(module) {
       "use strict";
       module.exports = require("./index");
@@ -259,7 +259,7 @@ require("v8-compile-cache"), function() {
       "use strict";
       module.exports = require("util");
     },
-    4318: function(module) {
+    6485: function(module) {
       "use strict";
       module.exports = JSON.parse('{"name":"svgo","version":"1.3.2","description":"Nodejs-based tool for optimizing SVG vector graphics files","engines":{"node":">=4"}}');
     }
@@ -273,5 +273,5 @@ require("v8-compile-cache"), function() {
     return __webpack_modules__[moduleId](module, module.exports, __webpack_require__), 
     module.exports;
   }
-  __webpack_require__(635).run();
+  __webpack_require__(2849).run();
 }();

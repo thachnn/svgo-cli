@@ -153,7 +153,584 @@
         return stable;
       }();
     },
-    5041: function(__unused_webpack_module, exports) {
+    9479: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var csstree = __webpack_require__(904), List = csstree.List, stable = __webpack_require__(5235), specificity = __webpack_require__(5509);
+      function compareSpecificity(aSpecificity, bSpecificity) {
+        for (var i = 0; i < 4; i += 1) {
+          if (aSpecificity[i] < bSpecificity[i]) return -1;
+          if (aSpecificity[i] > bSpecificity[i]) return 1;
+        }
+        return 0;
+      }
+      function compareSimpleSelectorNode(aSimpleSelectorNode, bSimpleSelectorNode) {
+        return compareSpecificity(specificity(aSimpleSelectorNode), specificity(bSimpleSelectorNode));
+      }
+      function _bySelectorSpecificity(selectorA, selectorB) {
+        return compareSimpleSelectorNode(selectorA.item.data, selectorB.item.data);
+      }
+      module.exports.flattenToSelectors = function(cssAst) {
+        var selectors = [];
+        return csstree.walk(cssAst, {
+          visit: "Rule",
+          enter: function(node) {
+            if ("Rule" === node.type) {
+              var atrule = this.atrule, rule = node;
+              node.prelude.children.each((function(selectorNode, selectorItem) {
+                var selector = {
+                  item: selectorItem,
+                  atrule: atrule,
+                  rule: rule,
+                  pseudos: []
+                };
+                selectorNode.children.each((function(selectorChildNode, selectorChildItem, selectorChildList) {
+                  "PseudoClassSelector" !== selectorChildNode.type && "PseudoElementSelector" !== selectorChildNode.type || selector.pseudos.push({
+                    item: selectorChildItem,
+                    list: selectorChildList
+                  });
+                })), selectors.push(selector);
+              }));
+            }
+          }
+        }), selectors;
+      }, module.exports.filterByMqs = function(selectors, useMqs) {
+        return selectors.filter((function(selector) {
+          if (null === selector.atrule) return ~useMqs.indexOf("");
+          var mqName = selector.atrule.name, mqStr = mqName;
+          selector.atrule.expression && "MediaQueryList" === selector.atrule.expression.children.first().type && (mqStr = [ mqName, csstree.generate(selector.atrule.expression) ].join(" "));
+          return ~useMqs.indexOf(mqStr);
+        }));
+      }, module.exports.filterByPseudos = function(selectors, usePseudos) {
+        return selectors.filter((function(selector) {
+          var pseudoSelectorsStr = csstree.generate({
+            type: "Selector",
+            children: (new List).fromArray(selector.pseudos.map((function(pseudo) {
+              return pseudo.item.data;
+            })))
+          });
+          return ~usePseudos.indexOf(pseudoSelectorsStr);
+        }));
+      }, module.exports.cleanPseudos = function(selectors) {
+        selectors.forEach((function(selector) {
+          selector.pseudos.forEach((function(pseudo) {
+            pseudo.list.remove(pseudo.item);
+          }));
+        }));
+      }, module.exports.compareSpecificity = compareSpecificity, module.exports.compareSimpleSelectorNode = compareSimpleSelectorNode, 
+      module.exports.sortSelectors = function(selectors) {
+        return stable(selectors, _bySelectorSpecificity);
+      }, module.exports.csstreeToStyleDeclaration = function(declaration) {
+        return {
+          name: declaration.property,
+          value: csstree.generate(declaration.value),
+          priority: declaration.important ? "important" : ""
+        };
+      }, module.exports.getCssStr = function(elem) {
+        return elem.content[0].text || elem.content[0].cdata || [];
+      }, module.exports.setCssStr = function(elem, css) {
+        return elem.content[0].cdata ? (elem.content[0].cdata = css, elem.content[0].cdata) : (elem.content[0].text = css, 
+        elem.content[0].text);
+      };
+    },
+    1801: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var CONFIG = __webpack_require__(8253), SVG2JS = __webpack_require__(7149), PLUGINS = __webpack_require__(2629), JSAPI = __webpack_require__(5773), encodeSVGDatauri = __webpack_require__(8665).By, JS2SVG = __webpack_require__(5559), SVGO = function(config) {
+        this.config = CONFIG(config);
+      };
+      SVGO.prototype.optimize = function(svgstr, info) {
+        return info = info || {}, new Promise(((resolve, reject) => {
+          if (this.config.error) reject(this.config.error); else {
+            var config = this.config, maxPassCount = config.multipass ? 10 : 1, counter = 0, prevResultSize = Number.POSITIVE_INFINITY, optimizeOnceCallback = svgjs => {
+              svgjs.error ? reject(svgjs.error) : (info.multipassCount = counter, ++counter < maxPassCount && svgjs.data.length < prevResultSize ? (prevResultSize = svgjs.data.length, 
+              this._optimizeOnce(svgjs.data, info, optimizeOnceCallback)) : (config.datauri && (svgjs.data = encodeSVGDatauri(svgjs.data, config.datauri)), 
+              info && info.path && (svgjs.path = info.path), resolve(svgjs)));
+            };
+            this._optimizeOnce(svgstr, info, optimizeOnceCallback);
+          }
+        }));
+      }, SVGO.prototype._optimizeOnce = function(svgstr, info, callback) {
+        var config = this.config;
+        SVG2JS(svgstr, (function(svgjs) {
+          svgjs.error ? callback(svgjs) : (svgjs = PLUGINS(svgjs, info, config.plugins), callback(JS2SVG(svgjs, config.js2svg)));
+        }));
+      }, SVGO.prototype.createContentItem = function(data) {
+        return new JSAPI(data);
+      }, SVGO.Config = CONFIG, module.exports = SVGO, module.exports.default = SVGO;
+    },
+    7984: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var svgoCssSelectAdapter = __webpack_require__(4815)({
+        isTag: function(node) {
+          return node.isElem();
+        },
+        getParent: function(node) {
+          return node.parentNode || null;
+        },
+        getChildren: function(node) {
+          return node.content || [];
+        },
+        getName: function(elemAst) {
+          return elemAst.elem;
+        },
+        getText: function(node) {
+          return node.content[0].text || node.content[0].cdata || "";
+        },
+        getAttributeValue: function(elem, name) {
+          return elem.hasAttr(name) ? elem.attr(name).value : null;
+        }
+      });
+      module.exports = svgoCssSelectAdapter;
+    },
+    1757: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var csstree = __webpack_require__(904), csstools = __webpack_require__(9479), CSSStyleDeclaration = function(node) {
+        this.parentNode = node, this.properties = new Map, this.hasSynced = !1, this.styleAttr = null, 
+        this.styleValue = null, this.parseError = !1;
+      };
+      CSSStyleDeclaration.prototype.clone = function(parentNode) {
+        var node = this, nodeData = {};
+        Object.keys(node).forEach((function(key) {
+          "parentNode" !== key && (nodeData[key] = node[key]);
+        })), nodeData = JSON.parse(JSON.stringify(nodeData));
+        var clone = new CSSStyleDeclaration(parentNode);
+        return Object.assign(clone, nodeData), clone;
+      }, CSSStyleDeclaration.prototype.hasStyle = function() {
+        this.addStyleHandler();
+      }, CSSStyleDeclaration.prototype.addStyleHandler = function() {
+        this.styleAttr = {
+          name: "style",
+          value: null
+        }, Object.defineProperty(this.parentNode.attrs, "style", {
+          get: this.getStyleAttr.bind(this),
+          set: this.setStyleAttr.bind(this),
+          enumerable: !0,
+          configurable: !0
+        }), this.addStyleValueHandler();
+      }, CSSStyleDeclaration.prototype.addStyleValueHandler = function() {
+        Object.defineProperty(this.styleAttr, "value", {
+          get: this.getStyleValue.bind(this),
+          set: this.setStyleValue.bind(this),
+          enumerable: !0,
+          configurable: !0
+        });
+      }, CSSStyleDeclaration.prototype.getStyleAttr = function() {
+        return this.styleAttr;
+      }, CSSStyleDeclaration.prototype.setStyleAttr = function(newStyleAttr) {
+        this.setStyleValue(newStyleAttr.value), this.styleAttr = newStyleAttr, this.addStyleValueHandler(), 
+        this.hasSynced = !1;
+      }, CSSStyleDeclaration.prototype.getStyleValue = function() {
+        return this.getCssText();
+      }, CSSStyleDeclaration.prototype.setStyleValue = function(newValue) {
+        this.properties.clear(), this.styleValue = newValue, this.hasSynced = !1;
+      }, CSSStyleDeclaration.prototype._loadCssText = function() {
+        if (!this.hasSynced && (this.hasSynced = !0, this.styleValue && 0 !== this.styleValue.length)) {
+          var inlineCssStr = this.styleValue, declarations = {};
+          try {
+            declarations = csstree.parse(inlineCssStr, {
+              context: "declarationList",
+              parseValue: !1
+            });
+          } catch (parseError) {
+            return void (this.parseError = parseError);
+          }
+          this.parseError = !1;
+          var self = this;
+          declarations.children.each((function(declaration) {
+            try {
+              var styleDeclaration = csstools.csstreeToStyleDeclaration(declaration);
+              self.setProperty(styleDeclaration.name, styleDeclaration.value, styleDeclaration.priority);
+            } catch (styleError) {
+              "Unknown node type: undefined" !== styleError.message && (self.parseError = styleError);
+            }
+          }));
+        }
+      }, CSSStyleDeclaration.prototype.getCssText = function() {
+        var properties = this.getProperties();
+        if (this.parseError) return this.styleValue;
+        var cssText = [];
+        return properties.forEach((function(property, propertyName) {
+          var strImportant = "important" === property.priority ? "!important" : "";
+          cssText.push(propertyName.trim() + ":" + property.value.trim() + strImportant);
+        })), cssText.join(";");
+      }, CSSStyleDeclaration.prototype._handleParseError = function() {
+        this.parseError && console.warn("Warning: Parse error when parsing inline styles, style properties of this element cannot be used. The raw styles can still be get/set using .attr('style').value. Error details: " + this.parseError);
+      }, CSSStyleDeclaration.prototype._getProperty = function(propertyName) {
+        if (void 0 === propertyName) throw Error("1 argument required, but only 0 present.");
+        var properties = this.getProperties();
+        return this._handleParseError(), properties.get(propertyName.trim());
+      }, CSSStyleDeclaration.prototype.getPropertyPriority = function(propertyName) {
+        var property = this._getProperty(propertyName);
+        return property ? property.priority : "";
+      }, CSSStyleDeclaration.prototype.getPropertyValue = function(propertyName) {
+        var property = this._getProperty(propertyName);
+        return property ? property.value : null;
+      }, CSSStyleDeclaration.prototype.item = function(index) {
+        if (void 0 === index) throw Error("1 argument required, but only 0 present.");
+        var properties = this.getProperties();
+        return this._handleParseError(), Array.from(properties.keys())[index];
+      }, CSSStyleDeclaration.prototype.getProperties = function() {
+        return this._loadCssText(), this.properties;
+      }, CSSStyleDeclaration.prototype.removeProperty = function(propertyName) {
+        if (void 0 === propertyName) throw Error("1 argument required, but only 0 present.");
+        this.hasStyle();
+        var properties = this.getProperties();
+        this._handleParseError();
+        var oldValue = this.getPropertyValue(propertyName);
+        return properties.delete(propertyName.trim()), oldValue;
+      }, CSSStyleDeclaration.prototype.setProperty = function(propertyName, value, priority) {
+        if (void 0 === propertyName) throw Error("propertyName argument required, but only not present.");
+        this.hasStyle();
+        var properties = this.getProperties();
+        this._handleParseError();
+        var property = {
+          value: value.trim(),
+          priority: priority.trim()
+        };
+        return properties.set(propertyName.trim(), property), property;
+      }, module.exports = CSSStyleDeclaration;
+    },
+    5559: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var EOL = __webpack_require__(2037).EOL, textElem = __webpack_require__(3193).elemsGroups.textContent.concat("title"), defaults = {
+        doctypeStart: "<!DOCTYPE",
+        doctypeEnd: ">",
+        procInstStart: "<?",
+        procInstEnd: "?>",
+        tagOpenStart: "<",
+        tagOpenEnd: ">",
+        tagCloseStart: "</",
+        tagCloseEnd: ">",
+        tagShortStart: "<",
+        tagShortEnd: "/>",
+        attrStart: '="',
+        attrEnd: '"',
+        commentStart: "\x3c!--",
+        commentEnd: "--\x3e",
+        cdataStart: "<![CDATA[",
+        cdataEnd: "]]>",
+        textStart: "",
+        textEnd: "",
+        indent: 4,
+        regEntities: /[&'"<>]/g,
+        regValEntities: /[&"<>]/g,
+        encodeEntity: function(char) {
+          return entities[char];
+        },
+        pretty: !1,
+        useShortTags: !0
+      }, entities = {
+        "&": "&amp;",
+        "'": "&apos;",
+        '"': "&quot;",
+        ">": "&gt;",
+        "<": "&lt;"
+      };
+      function JS2SVG(config) {
+        this.config = config ? Object.assign({}, defaults, config) : Object.assign({}, defaults);
+        var indent = this.config.indent;
+        "number" != typeof indent || isNaN(indent) ? "string" != typeof indent && (this.config.indent = "    ") : this.config.indent = indent < 0 ? "\t" : " ".repeat(indent), 
+        this.config.pretty && (this.config.doctypeEnd += EOL, this.config.procInstEnd += EOL, 
+        this.config.commentEnd += EOL, this.config.cdataEnd += EOL, this.config.tagShortEnd += EOL, 
+        this.config.tagOpenEnd += EOL, this.config.tagCloseEnd += EOL, this.config.textEnd += EOL), 
+        this.indentLevel = 0, this.textContext = null;
+      }
+      module.exports = function(data, config) {
+        return new JS2SVG(config).convert(data);
+      }, JS2SVG.prototype.convert = function(data) {
+        var svg = "";
+        return data.content && (this.indentLevel++, data.content.forEach((function(item) {
+          item.elem ? svg += this.createElem(item) : item.text ? svg += this.createText(item.text) : item.doctype ? svg += this.createDoctype(item.doctype) : item.processinginstruction ? svg += this.createProcInst(item.processinginstruction) : item.comment ? svg += this.createComment(item.comment) : item.cdata && (svg += this.createCDATA(item.cdata));
+        }), this)), this.indentLevel--, {
+          data: svg,
+          info: {
+            width: this.width,
+            height: this.height
+          }
+        };
+      }, JS2SVG.prototype.createIndent = function() {
+        var indent = "";
+        return this.config.pretty && !this.textContext && (indent = this.config.indent.repeat(this.indentLevel - 1)), 
+        indent;
+      }, JS2SVG.prototype.createDoctype = function(doctype) {
+        return this.config.doctypeStart + doctype + this.config.doctypeEnd;
+      }, JS2SVG.prototype.createProcInst = function(instruction) {
+        return this.config.procInstStart + instruction.name + " " + instruction.body + this.config.procInstEnd;
+      }, JS2SVG.prototype.createComment = function(comment) {
+        return this.config.commentStart + comment + this.config.commentEnd;
+      }, JS2SVG.prototype.createCDATA = function(cdata) {
+        return this.createIndent() + this.config.cdataStart + cdata + this.config.cdataEnd;
+      }, JS2SVG.prototype.createElem = function(data) {
+        if (data.isElem("svg") && data.hasAttr("width") && data.hasAttr("height") && (this.width = data.attr("width").value, 
+        this.height = data.attr("height").value), data.isEmpty()) return this.config.useShortTags ? this.createIndent() + this.config.tagShortStart + data.elem + this.createAttrs(data) + this.config.tagShortEnd : this.createIndent() + this.config.tagShortStart + data.elem + this.createAttrs(data) + this.config.tagOpenEnd + this.config.tagCloseStart + data.elem + this.config.tagCloseEnd;
+        var tagOpenStart = this.config.tagOpenStart, tagOpenEnd = this.config.tagOpenEnd, tagCloseStart = this.config.tagCloseStart, tagCloseEnd = this.config.tagCloseEnd, openIndent = this.createIndent(), textIndent = "", processedData = "", dataEnd = "";
+        return this.textContext ? (tagOpenStart = defaults.tagOpenStart, tagOpenEnd = defaults.tagOpenEnd, 
+        tagCloseStart = defaults.tagCloseStart, tagCloseEnd = defaults.tagCloseEnd, openIndent = "") : data.isElem(textElem) && (this.config.pretty && (textIndent += openIndent + this.config.indent), 
+        this.textContext = data), processedData += this.convert(data).data, this.textContext == data && (this.textContext = null, 
+        this.config.pretty && (dataEnd = EOL)), openIndent + tagOpenStart + data.elem + this.createAttrs(data) + tagOpenEnd + textIndent + processedData + dataEnd + this.createIndent() + tagCloseStart + data.elem + tagCloseEnd;
+      }, JS2SVG.prototype.createAttrs = function(elem) {
+        var attrs = "";
+        return elem.eachAttr((function(attr) {
+          void 0 !== attr.value ? attrs += " " + attr.name + this.config.attrStart + String(attr.value).replace(this.config.regValEntities, this.config.encodeEntity) + this.config.attrEnd : attrs += " " + attr.name;
+        }), this), attrs;
+      }, JS2SVG.prototype.createText = function(text) {
+        return this.createIndent() + this.config.textStart + text.replace(this.config.regEntities, this.config.encodeEntity) + (this.textContext ? "" : this.config.textEnd);
+      };
+    },
+    5773: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var cssSelect = __webpack_require__(5853), cssSelectOpts = {
+        xmlMode: !0,
+        adapter: __webpack_require__(7984)
+      }, JSAPI = module.exports = function(data, parentNode) {
+        Object.assign(this, data), parentNode && Object.defineProperty(this, "parentNode", {
+          writable: !0,
+          value: parentNode
+        });
+      };
+      JSAPI.prototype.clone = function() {
+        var node = this, nodeData = {};
+        Object.keys(node).forEach((function(key) {
+          "class" !== key && "style" !== key && "content" !== key && (nodeData[key] = node[key]);
+        })), nodeData = JSON.parse(JSON.stringify(nodeData));
+        var clonedNode = new JSAPI(nodeData, !!node.parentNode);
+        return node.class && (clonedNode.class = node.class.clone(clonedNode)), node.style && (clonedNode.style = node.style.clone(clonedNode)), 
+        node.content && (clonedNode.content = node.content.map((function(childNode) {
+          var clonedChild = childNode.clone();
+          return clonedChild.parentNode = clonedNode, clonedChild;
+        }))), clonedNode;
+      }, JSAPI.prototype.isElem = function(param) {
+        return param ? Array.isArray(param) ? !!this.elem && param.indexOf(this.elem) > -1 : !!this.elem && this.elem === param : !!this.elem;
+      }, JSAPI.prototype.renameElem = function(name) {
+        return name && "string" == typeof name && (this.elem = this.local = name), this;
+      }, JSAPI.prototype.isEmpty = function() {
+        return !this.content || !this.content.length;
+      }, JSAPI.prototype.closestElem = function(elemName) {
+        for (var elem = this; (elem = elem.parentNode) && !elem.isElem(elemName); ) ;
+        return elem;
+      }, JSAPI.prototype.spliceContent = function(start, n, insertion) {
+        return arguments.length < 2 ? [] : (Array.isArray(insertion) || (insertion = Array.apply(null, arguments).slice(2)), 
+        insertion.forEach((function(inner) {
+          inner.parentNode = this;
+        }), this), this.content.splice.apply(this.content, [ start, n ].concat(insertion)));
+      }, JSAPI.prototype.hasAttr = function(name, val) {
+        return !(!this.attrs || !Object.keys(this.attrs).length) && (arguments.length ? void 0 !== val ? !!this.attrs[name] && this.attrs[name].value === val.toString() : !!this.attrs[name] : !!this.attrs);
+      }, JSAPI.prototype.hasAttrLocal = function(localName, val) {
+        if (!this.attrs || !Object.keys(this.attrs).length) return !1;
+        if (!arguments.length) return !!this.attrs;
+        var callback;
+        switch (null != val && val.constructor && val.constructor.name) {
+         case "Number":
+         case "String":
+          callback = stringValueTest;
+          break;
+
+         case "RegExp":
+          callback = regexpValueTest;
+          break;
+
+         case "Function":
+          callback = funcValueTest;
+          break;
+
+         default:
+          callback = nameTest;
+        }
+        return this.someAttr(callback);
+        function nameTest(attr) {
+          return attr.local === localName;
+        }
+        function stringValueTest(attr) {
+          return attr.local === localName && val == attr.value;
+        }
+        function regexpValueTest(attr) {
+          return attr.local === localName && val.test(attr.value);
+        }
+        function funcValueTest(attr) {
+          return attr.local === localName && val(attr.value);
+        }
+      }, JSAPI.prototype.attr = function(name, val) {
+        if (this.hasAttr() && arguments.length) return void 0 !== val ? this.hasAttr(name, val) ? this.attrs[name] : void 0 : this.attrs[name];
+      }, JSAPI.prototype.computedAttr = function(name, val) {
+        if (arguments.length) {
+          for (var elem = this; elem && (!elem.hasAttr(name) || !elem.attr(name).value); elem = elem.parentNode) ;
+          return null != val ? !!elem && elem.hasAttr(name, val) : elem && elem.hasAttr(name) ? elem.attrs[name].value : void 0;
+        }
+      }, JSAPI.prototype.removeAttr = function(name, val, recursive) {
+        return !!arguments.length && (Array.isArray(name) ? (name.forEach(this.removeAttr, this), 
+        !1) : !!this.hasAttr(name) && (!(!recursive && val && this.attrs[name].value !== val) && (delete this.attrs[name], 
+        Object.keys(this.attrs).length || delete this.attrs, !0)));
+      }, JSAPI.prototype.addAttr = function(attr) {
+        return void 0 !== (attr = attr || {}).name && void 0 !== attr.prefix && void 0 !== attr.local && (this.attrs = this.attrs || {}, 
+        this.attrs[attr.name] = attr, "class" === attr.name && this.class.hasClass(), "style" === attr.name && this.style.hasStyle(), 
+        this.attrs[attr.name]);
+      }, JSAPI.prototype.eachAttr = function(callback, context) {
+        if (!this.hasAttr()) return !1;
+        for (var name in this.attrs) callback.call(context, this.attrs[name]);
+        return !0;
+      }, JSAPI.prototype.someAttr = function(callback, context) {
+        if (!this.hasAttr()) return !1;
+        for (var name in this.attrs) if (callback.call(context, this.attrs[name])) return !0;
+        return !1;
+      }, JSAPI.prototype.querySelectorAll = function(selectors) {
+        var matchedEls = cssSelect(selectors, this, cssSelectOpts);
+        return matchedEls.length > 0 ? matchedEls : null;
+      }, JSAPI.prototype.querySelector = function(selectors) {
+        return cssSelect.selectOne(selectors, this, cssSelectOpts);
+      }, JSAPI.prototype.matches = function(selector) {
+        return cssSelect.is(this, selector, cssSelectOpts);
+      };
+    },
+    2629: function(module) {
+      "use strict";
+      function perItem(data, info, plugins, reverse) {
+        return function monkeys(items) {
+          return items.content = items.content.filter((function(item) {
+            reverse && item.content && monkeys(item);
+            for (var filter = !0, i = 0; filter && i < plugins.length; i++) {
+              var plugin = plugins[i];
+              plugin.active && !1 === plugin.fn(item, plugin.params, info) && (filter = !1);
+            }
+            return !reverse && item.content && monkeys(item), filter;
+          })), items;
+        }(data);
+      }
+      module.exports = function(data, info, plugins) {
+        return plugins.forEach((function(group) {
+          switch (group[0].type) {
+           case "perItem":
+            data = perItem(data, info, group);
+            break;
+
+           case "perItemReverse":
+            data = perItem(data, info, group, !0);
+            break;
+
+           case "full":
+            data = function(data, info, plugins) {
+              return plugins.forEach((function(plugin) {
+                plugin.active && (data = plugin.fn(data, plugin.params, info));
+              })), data;
+            }(data, info, group);
+          }
+        })), data;
+      };
+    },
+    7149: function(module, __unused_webpack_exports, __webpack_require__) {
+      "use strict";
+      var SAX = __webpack_require__(6819), JSAPI = __webpack_require__(5773), CSSClassList = __webpack_require__(3235), CSSStyleDeclaration = __webpack_require__(1757), entityDeclaration = /<!ENTITY\s+(\S+)\s+(?:'([^\']+)'|"([^\"]+)")\s*>/g, config = {
+        strict: !0,
+        trim: !1,
+        normalize: !0,
+        lowercase: !0,
+        xmlns: !0,
+        position: !0
+      };
+      module.exports = function(data, callback) {
+        var sax = SAX.parser(config.strict, config), root = new JSAPI({
+          elem: "#document",
+          content: []
+        }), current = root, stack = [ root ], textContext = null, parsingError = !1;
+        function pushToContent(content) {
+          return content = new JSAPI(content, current), (current.content = current.content || []).push(content), 
+          content;
+        }
+        sax.ondoctype = function(doctype) {
+          pushToContent({
+            doctype: doctype
+          });
+          var entityMatch, subsetStart = doctype.indexOf("[");
+          if (subsetStart >= 0) for (entityDeclaration.lastIndex = subsetStart; null != (entityMatch = entityDeclaration.exec(data)); ) sax.ENTITIES[entityMatch[1]] = entityMatch[2] || entityMatch[3];
+        }, sax.onprocessinginstruction = function(data) {
+          pushToContent({
+            processinginstruction: data
+          });
+        }, sax.oncomment = function(comment) {
+          pushToContent({
+            comment: comment.trim()
+          });
+        }, sax.oncdata = function(cdata) {
+          pushToContent({
+            cdata: cdata
+          });
+        }, sax.onopentag = function(data) {
+          var elem = {
+            elem: data.name,
+            prefix: data.prefix,
+            local: data.local,
+            attrs: {}
+          };
+          if (elem.class = new CSSClassList(elem), elem.style = new CSSStyleDeclaration(elem), 
+          Object.keys(data.attributes).length) for (var name in data.attributes) "class" === name && elem.class.hasClass(), 
+          "style" === name && elem.style.hasStyle(), elem.attrs[name] = {
+            name: name,
+            value: data.attributes[name].value,
+            prefix: data.attributes[name].prefix,
+            local: data.attributes[name].local
+          };
+          elem = pushToContent(elem), current = elem, "text" != data.name || data.prefix || (textContext = current), 
+          stack.push(elem);
+        }, sax.ontext = function(text) {
+          (/\S/.test(text) || textContext) && (textContext || (text = text.trim()), pushToContent({
+            text: text
+          }));
+        }, sax.onclosetag = function() {
+          stack.pop() == textContext && (!function(elem) {
+            if (!elem.content) return elem;
+            var start = elem.content[0], end = elem.content[elem.content.length - 1];
+            for (;start && start.content && !start.text; ) start = start.content[0];
+            start && start.text && (start.text = start.text.replace(/^\s+/, ""));
+            for (;end && end.content && !end.text; ) end = end.content[end.content.length - 1];
+            end && end.text && (end.text = end.text.replace(/\s+$/, ""));
+          }(textContext), textContext = null), current = stack[stack.length - 1];
+        }, sax.onerror = function(e) {
+          if (e.message = "Error in parsing SVG: " + e.message, e.message.indexOf("Unexpected end") < 0) throw e;
+        }, sax.onend = function() {
+          this.error ? callback({
+            error: this.error.message
+          }) : callback(root);
+        };
+        try {
+          sax.write(data);
+        } catch (e) {
+          callback({
+            error: e.message
+          }), parsingError = !0;
+        }
+        parsingError || sax.close();
+      };
+    },
+    8665: function(__unused_webpack_module, exports, __webpack_require__) {
+      "use strict";
+      var FS = __webpack_require__(7147);
+      exports.By = function(str, type) {
+        var prefix = "data:image/svg+xml";
+        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : (prefix += ";base64,", 
+        str = Buffer.from ? prefix + Buffer.from(str).toString("base64") : prefix + new Buffer(str).toString("base64")), 
+        str;
+      };
+      var removeLeadingZero = function(num) {
+        var strNum = num.toString();
+        return 0 < num && num < 1 && 48 == strNum.charCodeAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && 48 == strNum.charCodeAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
+        strNum;
+      };
+    },
+    3193: function(__unused_webpack_module, exports) {
+      "use strict";
+      exports.elemsGroups = {
+        animation: [ "animate", "animateColor", "animateMotion", "animateTransform", "set" ],
+        descriptive: [ "desc", "metadata", "title" ],
+        shape: [ "circle", "ellipse", "line", "path", "polygon", "polyline", "rect" ],
+        structural: [ "defs", "g", "svg", "symbol", "use" ],
+        paintServer: [ "solidColor", "linearGradient", "radialGradient", "meshGradient", "pattern", "hatch" ],
+        nonRendering: [ "linearGradient", "radialGradient", "pattern", "clipPath", "mask", "marker", "symbol", "filter", "solidColor" ],
+        container: [ "a", "defs", "g", "marker", "mask", "missing-glyph", "pattern", "svg", "switch", "symbol", "foreignObject" ],
+        textContent: [ "altGlyph", "altGlyphDef", "altGlyphItem", "glyph", "glyphRef", "textPath", "text", "tref", "tspan" ],
+        textContentChild: [ "altGlyph", "textPath", "tref", "tspan" ],
+        lightSource: [ "feDiffuseLighting", "feSpecularLighting", "feDistantLight", "fePointLight", "feSpotLight" ],
+        filterPrimitive: [ "feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feFlood", "feGaussianBlur", "feImage", "feMerge", "feMorphology", "feOffset", "feSpecularLighting", "feTile", "feTurbulence" ]
+      };
+    },
+    6819: function(__unused_webpack_module, exports) {
       !function(sax) {
         sax.parser = function(strict, opt) {
           return new SAXParser(strict, opt);
@@ -927,7 +1504,7 @@
         }) : String.fromCodePoint = fromCodePoint);
       }(exports);
     },
-    9630: function(module) {
+    3235: function(module) {
       "use strict";
       var CSSClassList = function(node) {
         this.parentNode = node, this.classNames = new Set, this.classAttr = null;
@@ -985,583 +1562,6 @@
       }, CSSClassList.prototype.contains = function(className) {
         return this.classNames.has(className);
       }, module.exports = CSSClassList;
-    },
-    9479: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var csstree = __webpack_require__(904), List = csstree.List, stable = __webpack_require__(5235), specificity = __webpack_require__(5509);
-      function compareSpecificity(aSpecificity, bSpecificity) {
-        for (var i = 0; i < 4; i += 1) {
-          if (aSpecificity[i] < bSpecificity[i]) return -1;
-          if (aSpecificity[i] > bSpecificity[i]) return 1;
-        }
-        return 0;
-      }
-      function compareSimpleSelectorNode(aSimpleSelectorNode, bSimpleSelectorNode) {
-        return compareSpecificity(specificity(aSimpleSelectorNode), specificity(bSimpleSelectorNode));
-      }
-      function _bySelectorSpecificity(selectorA, selectorB) {
-        return compareSimpleSelectorNode(selectorA.item.data, selectorB.item.data);
-      }
-      module.exports.flattenToSelectors = function(cssAst) {
-        var selectors = [];
-        return csstree.walk(cssAst, {
-          visit: "Rule",
-          enter: function(node) {
-            if ("Rule" === node.type) {
-              var atrule = this.atrule, rule = node;
-              node.prelude.children.each((function(selectorNode, selectorItem) {
-                var selector = {
-                  item: selectorItem,
-                  atrule: atrule,
-                  rule: rule,
-                  pseudos: []
-                };
-                selectorNode.children.each((function(selectorChildNode, selectorChildItem, selectorChildList) {
-                  "PseudoClassSelector" !== selectorChildNode.type && "PseudoElementSelector" !== selectorChildNode.type || selector.pseudos.push({
-                    item: selectorChildItem,
-                    list: selectorChildList
-                  });
-                })), selectors.push(selector);
-              }));
-            }
-          }
-        }), selectors;
-      }, module.exports.filterByMqs = function(selectors, useMqs) {
-        return selectors.filter((function(selector) {
-          if (null === selector.atrule) return ~useMqs.indexOf("");
-          var mqName = selector.atrule.name, mqStr = mqName;
-          selector.atrule.expression && "MediaQueryList" === selector.atrule.expression.children.first().type && (mqStr = [ mqName, csstree.generate(selector.atrule.expression) ].join(" "));
-          return ~useMqs.indexOf(mqStr);
-        }));
-      }, module.exports.filterByPseudos = function(selectors, usePseudos) {
-        return selectors.filter((function(selector) {
-          var pseudoSelectorsStr = csstree.generate({
-            type: "Selector",
-            children: (new List).fromArray(selector.pseudos.map((function(pseudo) {
-              return pseudo.item.data;
-            })))
-          });
-          return ~usePseudos.indexOf(pseudoSelectorsStr);
-        }));
-      }, module.exports.cleanPseudos = function(selectors) {
-        selectors.forEach((function(selector) {
-          selector.pseudos.forEach((function(pseudo) {
-            pseudo.list.remove(pseudo.item);
-          }));
-        }));
-      }, module.exports.compareSpecificity = compareSpecificity, module.exports.compareSimpleSelectorNode = compareSimpleSelectorNode, 
-      module.exports.sortSelectors = function(selectors) {
-        return stable(selectors, _bySelectorSpecificity);
-      }, module.exports.csstreeToStyleDeclaration = function(declaration) {
-        return {
-          name: declaration.property,
-          value: csstree.generate(declaration.value),
-          priority: declaration.important ? "important" : ""
-        };
-      }, module.exports.getCssStr = function(elem) {
-        return elem.content[0].text || elem.content[0].cdata || [];
-      }, module.exports.setCssStr = function(elem, css) {
-        return elem.content[0].cdata ? (elem.content[0].cdata = css, elem.content[0].cdata) : (elem.content[0].text = css, 
-        elem.content[0].text);
-      };
-    },
-    1801: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var CONFIG = __webpack_require__(8253), SVG2JS = __webpack_require__(7149), PLUGINS = __webpack_require__(2629), JSAPI = __webpack_require__(5773), encodeSVGDatauri = __webpack_require__(8665).By, JS2SVG = __webpack_require__(5559), SVGO = function(config) {
-        this.config = CONFIG(config);
-      };
-      SVGO.prototype.optimize = function(svgstr, info) {
-        return info = info || {}, new Promise(((resolve, reject) => {
-          if (this.config.error) reject(this.config.error); else {
-            var config = this.config, maxPassCount = config.multipass ? 10 : 1, counter = 0, prevResultSize = Number.POSITIVE_INFINITY, optimizeOnceCallback = svgjs => {
-              svgjs.error ? reject(svgjs.error) : (info.multipassCount = counter, ++counter < maxPassCount && svgjs.data.length < prevResultSize ? (prevResultSize = svgjs.data.length, 
-              this._optimizeOnce(svgjs.data, info, optimizeOnceCallback)) : (config.datauri && (svgjs.data = encodeSVGDatauri(svgjs.data, config.datauri)), 
-              info && info.path && (svgjs.path = info.path), resolve(svgjs)));
-            };
-            this._optimizeOnce(svgstr, info, optimizeOnceCallback);
-          }
-        }));
-      }, SVGO.prototype._optimizeOnce = function(svgstr, info, callback) {
-        var config = this.config;
-        SVG2JS(svgstr, (function(svgjs) {
-          svgjs.error ? callback(svgjs) : (svgjs = PLUGINS(svgjs, info, config.plugins), callback(JS2SVG(svgjs, config.js2svg)));
-        }));
-      }, SVGO.prototype.createContentItem = function(data) {
-        return new JSAPI(data);
-      }, SVGO.Config = CONFIG, module.exports = SVGO, module.exports.default = SVGO;
-    },
-    7984: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var svgoCssSelectAdapter = __webpack_require__(4815)({
-        isTag: function(node) {
-          return node.isElem();
-        },
-        getParent: function(node) {
-          return node.parentNode || null;
-        },
-        getChildren: function(node) {
-          return node.content || [];
-        },
-        getName: function(elemAst) {
-          return elemAst.elem;
-        },
-        getText: function(node) {
-          return node.content[0].text || node.content[0].cdata || "";
-        },
-        getAttributeValue: function(elem, name) {
-          return elem.hasAttr(name) ? elem.attr(name).value : null;
-        }
-      });
-      module.exports = svgoCssSelectAdapter;
-    },
-    1757: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var csstree = __webpack_require__(904), csstools = __webpack_require__(9479), CSSStyleDeclaration = function(node) {
-        this.parentNode = node, this.properties = new Map, this.hasSynced = !1, this.styleAttr = null, 
-        this.styleValue = null, this.parseError = !1;
-      };
-      CSSStyleDeclaration.prototype.clone = function(parentNode) {
-        var node = this, nodeData = {};
-        Object.keys(node).forEach((function(key) {
-          "parentNode" !== key && (nodeData[key] = node[key]);
-        })), nodeData = JSON.parse(JSON.stringify(nodeData));
-        var clone = new CSSStyleDeclaration(parentNode);
-        return Object.assign(clone, nodeData), clone;
-      }, CSSStyleDeclaration.prototype.hasStyle = function() {
-        this.addStyleHandler();
-      }, CSSStyleDeclaration.prototype.addStyleHandler = function() {
-        this.styleAttr = {
-          name: "style",
-          value: null
-        }, Object.defineProperty(this.parentNode.attrs, "style", {
-          get: this.getStyleAttr.bind(this),
-          set: this.setStyleAttr.bind(this),
-          enumerable: !0,
-          configurable: !0
-        }), this.addStyleValueHandler();
-      }, CSSStyleDeclaration.prototype.addStyleValueHandler = function() {
-        Object.defineProperty(this.styleAttr, "value", {
-          get: this.getStyleValue.bind(this),
-          set: this.setStyleValue.bind(this),
-          enumerable: !0,
-          configurable: !0
-        });
-      }, CSSStyleDeclaration.prototype.getStyleAttr = function() {
-        return this.styleAttr;
-      }, CSSStyleDeclaration.prototype.setStyleAttr = function(newStyleAttr) {
-        this.setStyleValue(newStyleAttr.value), this.styleAttr = newStyleAttr, this.addStyleValueHandler(), 
-        this.hasSynced = !1;
-      }, CSSStyleDeclaration.prototype.getStyleValue = function() {
-        return this.getCssText();
-      }, CSSStyleDeclaration.prototype.setStyleValue = function(newValue) {
-        this.properties.clear(), this.styleValue = newValue, this.hasSynced = !1;
-      }, CSSStyleDeclaration.prototype._loadCssText = function() {
-        if (!this.hasSynced && (this.hasSynced = !0, this.styleValue && 0 !== this.styleValue.length)) {
-          var inlineCssStr = this.styleValue, declarations = {};
-          try {
-            declarations = csstree.parse(inlineCssStr, {
-              context: "declarationList",
-              parseValue: !1
-            });
-          } catch (parseError) {
-            return void (this.parseError = parseError);
-          }
-          this.parseError = !1;
-          var self = this;
-          declarations.children.each((function(declaration) {
-            try {
-              var styleDeclaration = csstools.csstreeToStyleDeclaration(declaration);
-              self.setProperty(styleDeclaration.name, styleDeclaration.value, styleDeclaration.priority);
-            } catch (styleError) {
-              "Unknown node type: undefined" !== styleError.message && (self.parseError = styleError);
-            }
-          }));
-        }
-      }, CSSStyleDeclaration.prototype.getCssText = function() {
-        var properties = this.getProperties();
-        if (this.parseError) return this.styleValue;
-        var cssText = [];
-        return properties.forEach((function(property, propertyName) {
-          var strImportant = "important" === property.priority ? "!important" : "";
-          cssText.push(propertyName.trim() + ":" + property.value.trim() + strImportant);
-        })), cssText.join(";");
-      }, CSSStyleDeclaration.prototype._handleParseError = function() {
-        this.parseError && console.warn("Warning: Parse error when parsing inline styles, style properties of this element cannot be used. The raw styles can still be get/set using .attr('style').value. Error details: " + this.parseError);
-      }, CSSStyleDeclaration.prototype._getProperty = function(propertyName) {
-        if (void 0 === propertyName) throw Error("1 argument required, but only 0 present.");
-        var properties = this.getProperties();
-        return this._handleParseError(), properties.get(propertyName.trim());
-      }, CSSStyleDeclaration.prototype.getPropertyPriority = function(propertyName) {
-        var property = this._getProperty(propertyName);
-        return property ? property.priority : "";
-      }, CSSStyleDeclaration.prototype.getPropertyValue = function(propertyName) {
-        var property = this._getProperty(propertyName);
-        return property ? property.value : null;
-      }, CSSStyleDeclaration.prototype.item = function(index) {
-        if (void 0 === index) throw Error("1 argument required, but only 0 present.");
-        var properties = this.getProperties();
-        return this._handleParseError(), Array.from(properties.keys())[index];
-      }, CSSStyleDeclaration.prototype.getProperties = function() {
-        return this._loadCssText(), this.properties;
-      }, CSSStyleDeclaration.prototype.removeProperty = function(propertyName) {
-        if (void 0 === propertyName) throw Error("1 argument required, but only 0 present.");
-        this.hasStyle();
-        var properties = this.getProperties();
-        this._handleParseError();
-        var oldValue = this.getPropertyValue(propertyName);
-        return properties.delete(propertyName.trim()), oldValue;
-      }, CSSStyleDeclaration.prototype.setProperty = function(propertyName, value, priority) {
-        if (void 0 === propertyName) throw Error("propertyName argument required, but only not present.");
-        this.hasStyle();
-        var properties = this.getProperties();
-        this._handleParseError();
-        var property = {
-          value: value.trim(),
-          priority: priority.trim()
-        };
-        return properties.set(propertyName.trim(), property), property;
-      }, module.exports = CSSStyleDeclaration;
-    },
-    5559: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var EOL = __webpack_require__(2037).EOL, textElem = __webpack_require__(3193).elemsGroups.textContent.concat("title"), defaults = {
-        doctypeStart: "<!DOCTYPE",
-        doctypeEnd: ">",
-        procInstStart: "<?",
-        procInstEnd: "?>",
-        tagOpenStart: "<",
-        tagOpenEnd: ">",
-        tagCloseStart: "</",
-        tagCloseEnd: ">",
-        tagShortStart: "<",
-        tagShortEnd: "/>",
-        attrStart: '="',
-        attrEnd: '"',
-        commentStart: "\x3c!--",
-        commentEnd: "--\x3e",
-        cdataStart: "<![CDATA[",
-        cdataEnd: "]]>",
-        textStart: "",
-        textEnd: "",
-        indent: 4,
-        regEntities: /[&'"<>]/g,
-        regValEntities: /[&"<>]/g,
-        encodeEntity: function(char) {
-          return entities[char];
-        },
-        pretty: !1,
-        useShortTags: !0
-      }, entities = {
-        "&": "&amp;",
-        "'": "&apos;",
-        '"': "&quot;",
-        ">": "&gt;",
-        "<": "&lt;"
-      };
-      function JS2SVG(config) {
-        this.config = config ? Object.assign({}, defaults, config) : Object.assign({}, defaults);
-        var indent = this.config.indent;
-        "number" != typeof indent || isNaN(indent) ? "string" != typeof indent && (this.config.indent = "    ") : this.config.indent = indent < 0 ? "\t" : " ".repeat(indent), 
-        this.config.pretty && (this.config.doctypeEnd += EOL, this.config.procInstEnd += EOL, 
-        this.config.commentEnd += EOL, this.config.cdataEnd += EOL, this.config.tagShortEnd += EOL, 
-        this.config.tagOpenEnd += EOL, this.config.tagCloseEnd += EOL, this.config.textEnd += EOL), 
-        this.indentLevel = 0, this.textContext = null;
-      }
-      module.exports = function(data, config) {
-        return new JS2SVG(config).convert(data);
-      }, JS2SVG.prototype.convert = function(data) {
-        var svg = "";
-        return data.content && (this.indentLevel++, data.content.forEach((function(item) {
-          item.elem ? svg += this.createElem(item) : item.text ? svg += this.createText(item.text) : item.doctype ? svg += this.createDoctype(item.doctype) : item.processinginstruction ? svg += this.createProcInst(item.processinginstruction) : item.comment ? svg += this.createComment(item.comment) : item.cdata && (svg += this.createCDATA(item.cdata));
-        }), this)), this.indentLevel--, {
-          data: svg,
-          info: {
-            width: this.width,
-            height: this.height
-          }
-        };
-      }, JS2SVG.prototype.createIndent = function() {
-        var indent = "";
-        return this.config.pretty && !this.textContext && (indent = this.config.indent.repeat(this.indentLevel - 1)), 
-        indent;
-      }, JS2SVG.prototype.createDoctype = function(doctype) {
-        return this.config.doctypeStart + doctype + this.config.doctypeEnd;
-      }, JS2SVG.prototype.createProcInst = function(instruction) {
-        return this.config.procInstStart + instruction.name + " " + instruction.body + this.config.procInstEnd;
-      }, JS2SVG.prototype.createComment = function(comment) {
-        return this.config.commentStart + comment + this.config.commentEnd;
-      }, JS2SVG.prototype.createCDATA = function(cdata) {
-        return this.createIndent() + this.config.cdataStart + cdata + this.config.cdataEnd;
-      }, JS2SVG.prototype.createElem = function(data) {
-        if (data.isElem("svg") && data.hasAttr("width") && data.hasAttr("height") && (this.width = data.attr("width").value, 
-        this.height = data.attr("height").value), data.isEmpty()) return this.config.useShortTags ? this.createIndent() + this.config.tagShortStart + data.elem + this.createAttrs(data) + this.config.tagShortEnd : this.createIndent() + this.config.tagShortStart + data.elem + this.createAttrs(data) + this.config.tagOpenEnd + this.config.tagCloseStart + data.elem + this.config.tagCloseEnd;
-        var tagOpenStart = this.config.tagOpenStart, tagOpenEnd = this.config.tagOpenEnd, tagCloseStart = this.config.tagCloseStart, tagCloseEnd = this.config.tagCloseEnd, openIndent = this.createIndent(), textIndent = "", processedData = "", dataEnd = "";
-        return this.textContext ? (tagOpenStart = defaults.tagOpenStart, tagOpenEnd = defaults.tagOpenEnd, 
-        tagCloseStart = defaults.tagCloseStart, tagCloseEnd = defaults.tagCloseEnd, openIndent = "") : data.isElem(textElem) && (this.config.pretty && (textIndent += openIndent + this.config.indent), 
-        this.textContext = data), processedData += this.convert(data).data, this.textContext == data && (this.textContext = null, 
-        this.config.pretty && (dataEnd = EOL)), openIndent + tagOpenStart + data.elem + this.createAttrs(data) + tagOpenEnd + textIndent + processedData + dataEnd + this.createIndent() + tagCloseStart + data.elem + tagCloseEnd;
-      }, JS2SVG.prototype.createAttrs = function(elem) {
-        var attrs = "";
-        return elem.eachAttr((function(attr) {
-          void 0 !== attr.value ? attrs += " " + attr.name + this.config.attrStart + String(attr.value).replace(this.config.regValEntities, this.config.encodeEntity) + this.config.attrEnd : attrs += " " + attr.name;
-        }), this), attrs;
-      }, JS2SVG.prototype.createText = function(text) {
-        return this.createIndent() + this.config.textStart + text.replace(this.config.regEntities, this.config.encodeEntity) + (this.textContext ? "" : this.config.textEnd);
-      };
-    },
-    5773: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var cssSelect = __webpack_require__(5853), cssSelectOpts = {
-        xmlMode: !0,
-        adapter: __webpack_require__(7984)
-      }, JSAPI = module.exports = function(data, parentNode) {
-        Object.assign(this, data), parentNode && Object.defineProperty(this, "parentNode", {
-          writable: !0,
-          value: parentNode
-        });
-      };
-      JSAPI.prototype.clone = function() {
-        var node = this, nodeData = {};
-        Object.keys(node).forEach((function(key) {
-          "class" !== key && "style" !== key && "content" !== key && (nodeData[key] = node[key]);
-        })), nodeData = JSON.parse(JSON.stringify(nodeData));
-        var clonedNode = new JSAPI(nodeData, !!node.parentNode);
-        return node.class && (clonedNode.class = node.class.clone(clonedNode)), node.style && (clonedNode.style = node.style.clone(clonedNode)), 
-        node.content && (clonedNode.content = node.content.map((function(childNode) {
-          var clonedChild = childNode.clone();
-          return clonedChild.parentNode = clonedNode, clonedChild;
-        }))), clonedNode;
-      }, JSAPI.prototype.isElem = function(param) {
-        return param ? Array.isArray(param) ? !!this.elem && param.indexOf(this.elem) > -1 : !!this.elem && this.elem === param : !!this.elem;
-      }, JSAPI.prototype.renameElem = function(name) {
-        return name && "string" == typeof name && (this.elem = this.local = name), this;
-      }, JSAPI.prototype.isEmpty = function() {
-        return !this.content || !this.content.length;
-      }, JSAPI.prototype.closestElem = function(elemName) {
-        for (var elem = this; (elem = elem.parentNode) && !elem.isElem(elemName); ) ;
-        return elem;
-      }, JSAPI.prototype.spliceContent = function(start, n, insertion) {
-        return arguments.length < 2 ? [] : (Array.isArray(insertion) || (insertion = Array.apply(null, arguments).slice(2)), 
-        insertion.forEach((function(inner) {
-          inner.parentNode = this;
-        }), this), this.content.splice.apply(this.content, [ start, n ].concat(insertion)));
-      }, JSAPI.prototype.hasAttr = function(name, val) {
-        return !(!this.attrs || !Object.keys(this.attrs).length) && (arguments.length ? void 0 !== val ? !!this.attrs[name] && this.attrs[name].value === val.toString() : !!this.attrs[name] : !!this.attrs);
-      }, JSAPI.prototype.hasAttrLocal = function(localName, val) {
-        if (!this.attrs || !Object.keys(this.attrs).length) return !1;
-        if (!arguments.length) return !!this.attrs;
-        var callback;
-        switch (null != val && val.constructor && val.constructor.name) {
-         case "Number":
-         case "String":
-          callback = stringValueTest;
-          break;
-
-         case "RegExp":
-          callback = regexpValueTest;
-          break;
-
-         case "Function":
-          callback = funcValueTest;
-          break;
-
-         default:
-          callback = nameTest;
-        }
-        return this.someAttr(callback);
-        function nameTest(attr) {
-          return attr.local === localName;
-        }
-        function stringValueTest(attr) {
-          return attr.local === localName && val == attr.value;
-        }
-        function regexpValueTest(attr) {
-          return attr.local === localName && val.test(attr.value);
-        }
-        function funcValueTest(attr) {
-          return attr.local === localName && val(attr.value);
-        }
-      }, JSAPI.prototype.attr = function(name, val) {
-        if (this.hasAttr() && arguments.length) return void 0 !== val ? this.hasAttr(name, val) ? this.attrs[name] : void 0 : this.attrs[name];
-      }, JSAPI.prototype.computedAttr = function(name, val) {
-        if (arguments.length) {
-          for (var elem = this; elem && (!elem.hasAttr(name) || !elem.attr(name).value); elem = elem.parentNode) ;
-          return null != val ? !!elem && elem.hasAttr(name, val) : elem && elem.hasAttr(name) ? elem.attrs[name].value : void 0;
-        }
-      }, JSAPI.prototype.removeAttr = function(name, val, recursive) {
-        return !!arguments.length && (Array.isArray(name) ? (name.forEach(this.removeAttr, this), 
-        !1) : !!this.hasAttr(name) && (!(!recursive && val && this.attrs[name].value !== val) && (delete this.attrs[name], 
-        Object.keys(this.attrs).length || delete this.attrs, !0)));
-      }, JSAPI.prototype.addAttr = function(attr) {
-        return void 0 !== (attr = attr || {}).name && void 0 !== attr.prefix && void 0 !== attr.local && (this.attrs = this.attrs || {}, 
-        this.attrs[attr.name] = attr, "class" === attr.name && this.class.hasClass(), "style" === attr.name && this.style.hasStyle(), 
-        this.attrs[attr.name]);
-      }, JSAPI.prototype.eachAttr = function(callback, context) {
-        if (!this.hasAttr()) return !1;
-        for (var name in this.attrs) callback.call(context, this.attrs[name]);
-        return !0;
-      }, JSAPI.prototype.someAttr = function(callback, context) {
-        if (!this.hasAttr()) return !1;
-        for (var name in this.attrs) if (callback.call(context, this.attrs[name])) return !0;
-        return !1;
-      }, JSAPI.prototype.querySelectorAll = function(selectors) {
-        var matchedEls = cssSelect(selectors, this, cssSelectOpts);
-        return matchedEls.length > 0 ? matchedEls : null;
-      }, JSAPI.prototype.querySelector = function(selectors) {
-        return cssSelect.selectOne(selectors, this, cssSelectOpts);
-      }, JSAPI.prototype.matches = function(selector) {
-        return cssSelect.is(this, selector, cssSelectOpts);
-      };
-    },
-    2629: function(module) {
-      "use strict";
-      function perItem(data, info, plugins, reverse) {
-        return function monkeys(items) {
-          return items.content = items.content.filter((function(item) {
-            reverse && item.content && monkeys(item);
-            for (var filter = !0, i = 0; filter && i < plugins.length; i++) {
-              var plugin = plugins[i];
-              plugin.active && !1 === plugin.fn(item, plugin.params, info) && (filter = !1);
-            }
-            return !reverse && item.content && monkeys(item), filter;
-          })), items;
-        }(data);
-      }
-      module.exports = function(data, info, plugins) {
-        return plugins.forEach((function(group) {
-          switch (group[0].type) {
-           case "perItem":
-            data = perItem(data, info, group);
-            break;
-
-           case "perItemReverse":
-            data = perItem(data, info, group, !0);
-            break;
-
-           case "full":
-            data = function(data, info, plugins) {
-              return plugins.forEach((function(plugin) {
-                plugin.active && (data = plugin.fn(data, plugin.params, info));
-              })), data;
-            }(data, info, group);
-          }
-        })), data;
-      };
-    },
-    7149: function(module, __unused_webpack_exports, __webpack_require__) {
-      "use strict";
-      var SAX = __webpack_require__(5041), JSAPI = __webpack_require__(5773), CSSClassList = __webpack_require__(9630), CSSStyleDeclaration = __webpack_require__(1757), entityDeclaration = /<!ENTITY\s+(\S+)\s+(?:'([^\']+)'|"([^\"]+)")\s*>/g, config = {
-        strict: !0,
-        trim: !1,
-        normalize: !0,
-        lowercase: !0,
-        xmlns: !0,
-        position: !0
-      };
-      module.exports = function(data, callback) {
-        var sax = SAX.parser(config.strict, config), root = new JSAPI({
-          elem: "#document",
-          content: []
-        }), current = root, stack = [ root ], textContext = null, parsingError = !1;
-        function pushToContent(content) {
-          return content = new JSAPI(content, current), (current.content = current.content || []).push(content), 
-          content;
-        }
-        sax.ondoctype = function(doctype) {
-          pushToContent({
-            doctype: doctype
-          });
-          var entityMatch, subsetStart = doctype.indexOf("[");
-          if (subsetStart >= 0) for (entityDeclaration.lastIndex = subsetStart; null != (entityMatch = entityDeclaration.exec(data)); ) sax.ENTITIES[entityMatch[1]] = entityMatch[2] || entityMatch[3];
-        }, sax.onprocessinginstruction = function(data) {
-          pushToContent({
-            processinginstruction: data
-          });
-        }, sax.oncomment = function(comment) {
-          pushToContent({
-            comment: comment.trim()
-          });
-        }, sax.oncdata = function(cdata) {
-          pushToContent({
-            cdata: cdata
-          });
-        }, sax.onopentag = function(data) {
-          var elem = {
-            elem: data.name,
-            prefix: data.prefix,
-            local: data.local,
-            attrs: {}
-          };
-          if (elem.class = new CSSClassList(elem), elem.style = new CSSStyleDeclaration(elem), 
-          Object.keys(data.attributes).length) for (var name in data.attributes) "class" === name && elem.class.hasClass(), 
-          "style" === name && elem.style.hasStyle(), elem.attrs[name] = {
-            name: name,
-            value: data.attributes[name].value,
-            prefix: data.attributes[name].prefix,
-            local: data.attributes[name].local
-          };
-          elem = pushToContent(elem), current = elem, "text" != data.name || data.prefix || (textContext = current), 
-          stack.push(elem);
-        }, sax.ontext = function(text) {
-          (/\S/.test(text) || textContext) && (textContext || (text = text.trim()), pushToContent({
-            text: text
-          }));
-        }, sax.onclosetag = function() {
-          stack.pop() == textContext && (!function(elem) {
-            if (!elem.content) return elem;
-            var start = elem.content[0], end = elem.content[elem.content.length - 1];
-            for (;start && start.content && !start.text; ) start = start.content[0];
-            start && start.text && (start.text = start.text.replace(/^\s+/, ""));
-            for (;end && end.content && !end.text; ) end = end.content[end.content.length - 1];
-            end && end.text && (end.text = end.text.replace(/\s+$/, ""));
-          }(textContext), textContext = null), current = stack[stack.length - 1];
-        }, sax.onerror = function(e) {
-          if (e.message = "Error in parsing SVG: " + e.message, e.message.indexOf("Unexpected end") < 0) throw e;
-        }, sax.onend = function() {
-          this.error ? callback({
-            error: this.error.message
-          }) : callback(root);
-        };
-        try {
-          sax.write(data);
-        } catch (e) {
-          callback({
-            error: e.message
-          }), parsingError = !0;
-        }
-        parsingError || sax.close();
-      };
-    },
-    8665: function(__unused_webpack_module, exports, __webpack_require__) {
-      "use strict";
-      var FS = __webpack_require__(7147);
-      exports.By = function(str, type) {
-        var prefix = "data:image/svg+xml";
-        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : (prefix += ";base64,", 
-        str = Buffer.from ? prefix + Buffer.from(str).toString("base64") : prefix + new Buffer(str).toString("base64")), 
-        str;
-      };
-      var removeLeadingZero = function(num) {
-        var strNum = num.toString();
-        return 0 < num && num < 1 && 48 == strNum.charCodeAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && 48 == strNum.charCodeAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
-        strNum;
-      };
-    },
-    3193: function(__unused_webpack_module, exports) {
-      "use strict";
-      exports.elemsGroups = {
-        animation: [ "animate", "animateColor", "animateMotion", "animateTransform", "set" ],
-        descriptive: [ "desc", "metadata", "title" ],
-        shape: [ "circle", "ellipse", "line", "path", "polygon", "polyline", "rect" ],
-        structural: [ "defs", "g", "svg", "symbol", "use" ],
-        paintServer: [ "solidColor", "linearGradient", "radialGradient", "meshGradient", "pattern", "hatch" ],
-        nonRendering: [ "linearGradient", "radialGradient", "pattern", "clipPath", "mask", "marker", "symbol", "filter", "solidColor" ],
-        container: [ "a", "defs", "g", "marker", "mask", "missing-glyph", "pattern", "svg", "switch", "symbol", "foreignObject" ],
-        textContent: [ "altGlyph", "altGlyphDef", "altGlyphItem", "glyph", "glyphRef", "textPath", "text", "tref", "tspan" ],
-        textContentChild: [ "altGlyph", "textPath", "tref", "tspan" ],
-        lightSource: [ "feDiffuseLighting", "feSpecularLighting", "feDistantLight", "fePointLight", "feSpotLight" ],
-        filterPrimitive: [ "feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feFlood", "feGaussianBlur", "feImage", "feMerge", "feMorphology", "feOffset", "feSpecularLighting", "feTile", "feTurbulence" ]
-      };
     },
     8253: function(module) {
       "use strict";
