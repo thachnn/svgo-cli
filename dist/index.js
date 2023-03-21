@@ -84,7 +84,7 @@
     },
     3527: (__unused_webpack_module, exports, __webpack_require__) => {
       "use strict";
-      const SAX = __webpack_require__(4094), JSAPI = __webpack_require__(4267), {textElems} = __webpack_require__(6556);
+      const SAX = __webpack_require__(1263), JSAPI = __webpack_require__(4267), {textElems} = __webpack_require__(6556);
       class SvgoParserError extends Error {
         constructor(message, line, column, source, file) {
           super(message), this.name = "SvgoParserError", this.message = `${file || "<input>"}:${line}:${column}: ${message}`, 
@@ -898,7 +898,7 @@
         return stable;
       }();
     },
-    4094: (__unused_webpack_module, exports) => {
+    1263: (__unused_webpack_module, exports) => {
       !function(sax) {
         sax.parser = function(strict, opt) {
           return new SAXParser(strict, opt);
@@ -1673,10 +1673,6 @@
       "use strict";
       module.exports = require("./vendor/css-select");
     },
-    5965: module => {
-      "use strict";
-      module.exports = require;
-    },
     904: module => {
       "use strict";
       module.exports = require("./vendor/css-tree");
@@ -1715,12 +1711,12 @@
     exports.extendDefaultPlugins = extendDefaultPlugins, exports.createContentItem = createContentItem;
     const importConfig = async configFile => {
       let config;
-      if (configFile.endsWith(".cjs")) config = __webpack_require__(5965)(configFile); else try {
+      if (configFile.endsWith(".cjs")) config = require(configFile); else try {
         const {default: imported} = await import(pathToFileURL(configFile));
         config = imported;
       } catch (importError) {
         try {
-          config = __webpack_require__(5965)(configFile);
+          config = require(configFile);
         } catch (requireError) {
           throw "ERR_REQUIRE_ESM" === requireError.code ? importError : requireError;
         }

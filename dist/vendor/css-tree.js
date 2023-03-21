@@ -894,9 +894,6 @@
         }, handlers;
       };
     },
-    4720: (module, __unused_webpack_exports, __webpack_require__) => {
-      module.exports = __webpack_require__(2916);
-    },
     7801: (module, __unused_webpack_exports, __webpack_require__) => {
       var SyntaxReferenceError = __webpack_require__(1628).SyntaxReferenceError, SyntaxMatchError = __webpack_require__(1628).SyntaxMatchError, names = __webpack_require__(5993), generic = __webpack_require__(3244), parse = __webpack_require__(7711), generate = __webpack_require__(1381), walk = __webpack_require__(9766), prepareTokens = __webpack_require__(4882), buildMatchGraph = __webpack_require__(5167).buildMatchGraph, matchAsTree = __webpack_require__(4583).matchAsTree, trace = __webpack_require__(2750), search = __webpack_require__(7445), getStructureFromConfig = __webpack_require__(5007).getStructureFromConfig, cssWideKeywords = buildMatchGraph("inherit | initial | unset"), cssWideKeywordsWithExpression = buildMatchGraph("inherit | initial | unset | <-ms-legacy-expression>");
       function dumpMapSyntax(map, compact, syntaxAsAst) {
@@ -5131,6 +5128,6 @@
     };
     return __webpack_modules__[moduleId](module, module.exports, __webpack_require__), 
     module.exports;
-  }(4720);
+  }(2916);
   module.exports = __webpack_exports__;
 })();

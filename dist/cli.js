@@ -38,9 +38,40 @@ require("v8-compile-cache"), (() => {
       });
       module.exports = createColors(), module.exports.createColors = createColors;
     },
-    8758: (module, __unused_webpack_exports, __webpack_require__) => {
+    2199: (__unused_webpack_module, exports) => {
       "use strict";
-      const fs = __webpack_require__(358), path = __webpack_require__(1017), colors = __webpack_require__(8879), {loadConfig, optimize} = __webpack_require__(4956), pluginsMap = __webpack_require__(128), PKG = __webpack_require__(4471), {encodeSVGDatauri, decodeSVGDatauri} = __webpack_require__(2199), regSVGFile = /\.svg$/i;
+      exports.encodeSVGDatauri = (str, type) => {
+        var prefix = "data:image/svg+xml";
+        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : str = (prefix += ";base64,") + Buffer.from(str).toString("base64"), 
+        str;
+      }, exports.decodeSVGDatauri = str => {
+        var match = /data:image\/svg\+xml(;charset=[^;,]*)?(;base64)?,(.*)/.exec(str);
+        if (!match) return str;
+        var data = match[3];
+        return match[2] ? str = Buffer.from(data, "base64").toString("utf8") : "%" === data.charAt(0) ? str = decodeURIComponent(data) : "<" === data.charAt(0) && (str = data), 
+        str;
+      }, exports.cleanupOutData = (data, params, command) => {
+        let delimiter, prev, str = "";
+        return data.forEach(((item, i) => {
+          if (delimiter = " ", 0 == i && (delimiter = ""), params.noSpaceAfterFlags && ("A" == command || "a" == command)) {
+            var pos = i % 7;
+            4 != pos && 5 != pos || (delimiter = "");
+          }
+          const itemStr = params.leadingZero ? removeLeadingZero(item) : item.toString();
+          params.negativeExtraSpace && "" != delimiter && (item < 0 || "." === itemStr.charAt(0) && prev % 1 != 0) && (delimiter = ""), 
+          prev = item, str += delimiter + itemStr;
+        })), str;
+      };
+      const removeLeadingZero = num => {
+        var strNum = num.toString();
+        return 0 < num && num < 1 && "0" === strNum.charAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && "0" === strNum.charAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
+        strNum;
+      };
+      exports.removeLeadingZero = removeLeadingZero;
+    },
+    3257: (module, __unused_webpack_exports, __webpack_require__) => {
+      "use strict";
+      const fs = __webpack_require__(358), path = __webpack_require__(1017), colors = __webpack_require__(8879), {loadConfig, optimize} = __webpack_require__(4956), pluginsMap = __webpack_require__(128), PKG = __webpack_require__(9761), {encodeSVGDatauri, decodeSVGDatauri} = __webpack_require__(2199), regSVGFile = /\.svg$/i;
       if (void 0 === fs.promises) {
         const {promisify} = __webpack_require__(3837);
         fs.promises = [ "readdir", "readFile", "writeFile" ].reduce(((obj, x) => (obj[x] = promisify(fs[x]), 
@@ -169,40 +200,9 @@ require("v8-compile-cache"), (() => {
         }).version(PKG.version, "-v, --version").arguments("[INPUT...]").option("-i, --input <INPUT...>", 'Input files, "-" for STDIN').option("-s, --string <STRING>", "Input SVG data string").option("-f, --folder <FOLDER>", "Input folder, optimize and rewrite all *.svg files").option("-o, --output <OUTPUT...>", 'Output file or folder (by default the same as the input), "-" for STDOUT').option("-p, --precision <INTEGER>", "Set number of digits in the fractional part, overrides plugins params").option("--config <CONFIG>", "Custom config file, only .js is supported").option("--datauri <FORMAT>", "Output as Data URI string (base64), URI encoded (enc) or unencoded (unenc)").option("--multipass", "Pass over SVGs multiple times to ensure all optimizations are applied").option("--pretty", "Make SVG pretty printed").option("--indent <INTEGER>", "Indent number when pretty printing SVGs").option("--eol <EOL>", "Line break to use when outputting SVG: lf, crlf. If unspecified, uses platform default.").option("--final-newline", "Ensure SVG ends with a line break").option("-r, --recursive", "Use with '--folder'. Optimizes *.svg files in folders recursively.").option("--exclude <PATTERN...>", "Use with '--folder'. Exclude files matching regular expression pattern.").option("-q, --quiet", "Only output error messages, not regular status messages").option("--show-plugins", "Show available plugins and exit").option("--no-color", "Output plain text without color").action(action);
       }, module.exports.checkIsDir = checkIsDir;
     },
-    2199: (__unused_webpack_module, exports) => {
-      "use strict";
-      exports.encodeSVGDatauri = (str, type) => {
-        var prefix = "data:image/svg+xml";
-        return type && "base64" !== type ? "enc" === type ? str = prefix + "," + encodeURIComponent(str) : "unenc" === type && (str = prefix + "," + str) : str = (prefix += ";base64,") + Buffer.from(str).toString("base64"), 
-        str;
-      }, exports.decodeSVGDatauri = str => {
-        var match = /data:image\/svg\+xml(;charset=[^;,]*)?(;base64)?,(.*)/.exec(str);
-        if (!match) return str;
-        var data = match[3];
-        return match[2] ? str = Buffer.from(data, "base64").toString("utf8") : "%" === data.charAt(0) ? str = decodeURIComponent(data) : "<" === data.charAt(0) && (str = data), 
-        str;
-      }, exports.cleanupOutData = (data, params, command) => {
-        let delimiter, prev, str = "";
-        return data.forEach(((item, i) => {
-          if (delimiter = " ", 0 == i && (delimiter = ""), params.noSpaceAfterFlags && ("A" == command || "a" == command)) {
-            var pos = i % 7;
-            4 != pos && 5 != pos || (delimiter = "");
-          }
-          const itemStr = params.leadingZero ? removeLeadingZero(item) : item.toString();
-          params.negativeExtraSpace && "" != delimiter && (item < 0 || "." === itemStr.charAt(0) && prev % 1 != 0) && (delimiter = ""), 
-          prev = item, str += delimiter + itemStr;
-        })), str;
-      };
-      const removeLeadingZero = num => {
-        var strNum = num.toString();
-        return 0 < num && num < 1 && "0" === strNum.charAt(0) ? strNum = strNum.slice(1) : -1 < num && num < 0 && "0" === strNum.charAt(1) && (strNum = strNum.charAt(0) + strNum.slice(2)), 
-        strNum;
-      };
-      exports.removeLeadingZero = removeLeadingZero;
-    },
     1149: (__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
       const colors = __webpack_require__(8879), {program} = __webpack_require__(2325);
-      __webpack_require__(8758)(program), program.parseAsync(process.argv).catch((error => {
+      __webpack_require__(3257)(program), program.parseAsync(process.argv).catch((error => {
         console.error(colors.red(error.stack)), process.exit(1);
       }));
     },
@@ -935,7 +935,7 @@ require("v8-compile-cache"), (() => {
       exports.Option = Option, exports.CommanderError = CommanderError, exports.InvalidOptionArgumentError = InvalidOptionArgumentError, 
       exports.Help = Help;
     },
-    4471: module => {
+    9761: module => {
       "use strict";
       module.exports = JSON.parse('{"name":"svgo","version":"2.8.0","description":"Nodejs-based tool for optimizing SVG vector graphics files","license":"MIT","engines":{"node":">=8.3"}}');
     }

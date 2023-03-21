@@ -114,7 +114,7 @@
       Object.defineProperty(exports, "__esModule", {
         value: !0
       }), exports.compileToken = exports.compileUnsafe = exports.compile = void 0;
-      var css_what_1 = __webpack_require__(9751), boolbase_1 = __webpack_require__(1073), sort_1 = __importDefault(__webpack_require__(7353)), procedure_1 = __webpack_require__(7177), general_1 = __webpack_require__(3621), subselects_1 = __webpack_require__(1768);
+      var css_what_1 = __webpack_require__(6948), boolbase_1 = __webpack_require__(1073), sort_1 = __importDefault(__webpack_require__(7353)), procedure_1 = __webpack_require__(7177), general_1 = __webpack_require__(3621), subselects_1 = __webpack_require__(1768);
       function compileUnsafe(selector, options, context) {
         return compileToken("string" == typeof selector ? css_what_1.parse(selector, options) : selector, options, context);
       }
@@ -496,7 +496,7 @@
       Object.defineProperty(exports, "__esModule", {
         value: !0
       }), exports.compilePseudoSelector = exports.aliases = exports.pseudos = exports.filters = void 0;
-      var boolbase_1 = __webpack_require__(1073), css_what_1 = __webpack_require__(9751), filters_1 = __webpack_require__(7689);
+      var boolbase_1 = __webpack_require__(1073), css_what_1 = __webpack_require__(6948), filters_1 = __webpack_require__(7689);
       Object.defineProperty(exports, "filters", {
         enumerable: !0,
         get: function() {
@@ -706,9 +706,21 @@
         }
       };
     },
-    9751: function(__unused_webpack_module, exports, __webpack_require__) {
+    7837: (__unused_webpack_module, exports) => {
       "use strict";
-      var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+      Object.defineProperty(exports, "__esModule", {
+        value: !0
+      }), exports.attributeNames = exports.elementNames = void 0, exports.elementNames = new Map([ [ "altglyph", "altGlyph" ], [ "altglyphdef", "altGlyphDef" ], [ "altglyphitem", "altGlyphItem" ], [ "animatecolor", "animateColor" ], [ "animatemotion", "animateMotion" ], [ "animatetransform", "animateTransform" ], [ "clippath", "clipPath" ], [ "feblend", "feBlend" ], [ "fecolormatrix", "feColorMatrix" ], [ "fecomponenttransfer", "feComponentTransfer" ], [ "fecomposite", "feComposite" ], [ "feconvolvematrix", "feConvolveMatrix" ], [ "fediffuselighting", "feDiffuseLighting" ], [ "fedisplacementmap", "feDisplacementMap" ], [ "fedistantlight", "feDistantLight" ], [ "fedropshadow", "feDropShadow" ], [ "feflood", "feFlood" ], [ "fefunca", "feFuncA" ], [ "fefuncb", "feFuncB" ], [ "fefuncg", "feFuncG" ], [ "fefuncr", "feFuncR" ], [ "fegaussianblur", "feGaussianBlur" ], [ "feimage", "feImage" ], [ "femerge", "feMerge" ], [ "femergenode", "feMergeNode" ], [ "femorphology", "feMorphology" ], [ "feoffset", "feOffset" ], [ "fepointlight", "fePointLight" ], [ "fespecularlighting", "feSpecularLighting" ], [ "fespotlight", "feSpotLight" ], [ "fetile", "feTile" ], [ "feturbulence", "feTurbulence" ], [ "foreignobject", "foreignObject" ], [ "glyphref", "glyphRef" ], [ "lineargradient", "linearGradient" ], [ "radialgradient", "radialGradient" ], [ "textpath", "textPath" ] ]), 
+      exports.attributeNames = new Map([ [ "definitionurl", "definitionURL" ], [ "attributename", "attributeName" ], [ "attributetype", "attributeType" ], [ "basefrequency", "baseFrequency" ], [ "baseprofile", "baseProfile" ], [ "calcmode", "calcMode" ], [ "clippathunits", "clipPathUnits" ], [ "diffuseconstant", "diffuseConstant" ], [ "edgemode", "edgeMode" ], [ "filterunits", "filterUnits" ], [ "glyphref", "glyphRef" ], [ "gradienttransform", "gradientTransform" ], [ "gradientunits", "gradientUnits" ], [ "kernelmatrix", "kernelMatrix" ], [ "kernelunitlength", "kernelUnitLength" ], [ "keypoints", "keyPoints" ], [ "keysplines", "keySplines" ], [ "keytimes", "keyTimes" ], [ "lengthadjust", "lengthAdjust" ], [ "limitingconeangle", "limitingConeAngle" ], [ "markerheight", "markerHeight" ], [ "markerunits", "markerUnits" ], [ "markerwidth", "markerWidth" ], [ "maskcontentunits", "maskContentUnits" ], [ "maskunits", "maskUnits" ], [ "numoctaves", "numOctaves" ], [ "pathlength", "pathLength" ], [ "patterncontentunits", "patternContentUnits" ], [ "patterntransform", "patternTransform" ], [ "patternunits", "patternUnits" ], [ "pointsatx", "pointsAtX" ], [ "pointsaty", "pointsAtY" ], [ "pointsatz", "pointsAtZ" ], [ "preservealpha", "preserveAlpha" ], [ "preserveaspectratio", "preserveAspectRatio" ], [ "primitiveunits", "primitiveUnits" ], [ "refx", "refX" ], [ "refy", "refY" ], [ "repeatcount", "repeatCount" ], [ "repeatdur", "repeatDur" ], [ "requiredextensions", "requiredExtensions" ], [ "requiredfeatures", "requiredFeatures" ], [ "specularconstant", "specularConstant" ], [ "specularexponent", "specularExponent" ], [ "spreadmethod", "spreadMethod" ], [ "startoffset", "startOffset" ], [ "stddeviation", "stdDeviation" ], [ "stitchtiles", "stitchTiles" ], [ "surfacescale", "surfaceScale" ], [ "systemlanguage", "systemLanguage" ], [ "tablevalues", "tableValues" ], [ "targetx", "targetX" ], [ "targety", "targetY" ], [ "textlength", "textLength" ], [ "viewbox", "viewBox" ], [ "viewtarget", "viewTarget" ], [ "xchannelselector", "xChannelSelector" ], [ "ychannelselector", "yChannelSelector" ], [ "zoomandpan", "zoomAndPan" ] ]);
+    },
+    7220: function(__unused_webpack_module, exports, __webpack_require__) {
+      "use strict";
+      var __assign = this && this.__assign || function() {
+        return __assign = Object.assign || function(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) for (var p in s = arguments[i]) Object.prototype.hasOwnProperty.call(s, p) && (t[p] = s[p]);
+          return t;
+        }, __assign.apply(this, arguments);
+      }, __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
         void 0 === k2 && (k2 = k), Object.defineProperty(o, k2, {
           enumerable: !0,
           get: function() {
@@ -717,296 +729,84 @@
         });
       } : function(o, m, k, k2) {
         void 0 === k2 && (k2 = k), o[k2] = m[k];
-      }), __exportStar = this && this.__exportStar || function(m, exports) {
-        for (var p in m) "default" === p || Object.prototype.hasOwnProperty.call(exports, p) || __createBinding(exports, m, p);
-      }, __importDefault = this && this.__importDefault || function(mod) {
-        return mod && mod.__esModule ? mod : {
-          default: mod
-        };
+      }), __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+        Object.defineProperty(o, "default", {
+          enumerable: !0,
+          value: v
+        });
+      } : function(o, v) {
+        o.default = v;
+      }), __importStar = this && this.__importStar || function(mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (null != mod) for (var k in mod) "default" !== k && Object.prototype.hasOwnProperty.call(mod, k) && __createBinding(result, mod, k);
+        return __setModuleDefault(result, mod), result;
       };
       Object.defineProperty(exports, "__esModule", {
         value: !0
-      }), exports.stringify = exports.parse = void 0, __exportStar(__webpack_require__(675), exports);
-      var parse_1 = __webpack_require__(675);
-      Object.defineProperty(exports, "parse", {
-        enumerable: !0,
-        get: function() {
-          return __importDefault(parse_1).default;
-        }
       });
-      var stringify_1 = __webpack_require__(6868);
-      Object.defineProperty(exports, "stringify", {
-        enumerable: !0,
-        get: function() {
-          return __importDefault(stringify_1).default;
-        }
-      });
-    },
-    675: function(__unused_webpack_module, exports) {
-      "use strict";
-      var __spreadArray = this && this.__spreadArray || function(to, from, pack) {
-        if (pack || 2 === arguments.length) for (var ar, i = 0, l = from.length; i < l; i++) !ar && i in from || (ar || (ar = Array.prototype.slice.call(from, 0, i)), 
-        ar[i] = from[i]);
-        return to.concat(ar || Array.prototype.slice.call(from));
-      };
-      Object.defineProperty(exports, "__esModule", {
-        value: !0
-      }), exports.isTraversal = void 0;
-      var reName = /^[^\\#]?(?:\\(?:[\da-f]{1,6}\s?|.)|[\w\-\u00b0-\uFFFF])+/, reEscape = /\\([\da-f]{1,6}\s?|(\s)|.)/gi, actionTypes = new Map([ [ "~", "element" ], [ "^", "start" ], [ "$", "end" ], [ "*", "any" ], [ "!", "not" ], [ "|", "hyphen" ] ]), Traversals = {
-        ">": "child",
-        "<": "parent",
-        "~": "sibling",
-        "+": "adjacent"
-      }, attribSelectors = {
-        "#": [ "id", "equals" ],
-        ".": [ "class", "element" ]
-      }, unpackPseudos = new Set([ "has", "not", "matches", "is", "where", "host", "host-context" ]), traversalNames = new Set(__spreadArray([ "descendant" ], Object.keys(Traversals).map((function(k) {
-        return Traversals[k];
-      })), !0)), caseInsensitiveAttributes = new Set([ "accept", "accept-charset", "align", "alink", "axis", "bgcolor", "charset", "checked", "clear", "codetype", "color", "compact", "declare", "defer", "dir", "direction", "disabled", "enctype", "face", "frame", "hreflang", "http-equiv", "lang", "language", "link", "media", "method", "multiple", "nohref", "noresize", "noshade", "nowrap", "readonly", "rel", "rev", "rules", "scope", "scrolling", "selected", "shape", "target", "text", "type", "valign", "valuetype", "vlink" ]);
-      function isTraversal(selector) {
-        return traversalNames.has(selector.type);
-      }
-      exports.isTraversal = isTraversal;
-      var stripQuotesFromPseudos = new Set([ "contains", "icontains" ]), quotes = new Set([ '"', "'" ]);
-      function funescape(_, escaped, escapedWhitespace) {
-        var high = parseInt(escaped, 16) - 65536;
-        return high != high || escapedWhitespace ? escaped : high < 0 ? String.fromCharCode(high + 65536) : String.fromCharCode(high >> 10 | 55296, 1023 & high | 56320);
-      }
-      function unescapeCSS(str) {
-        return str.replace(reEscape, funescape);
-      }
-      function isWhitespace(c) {
-        return " " === c || "\n" === c || "\t" === c || "\f" === c || "\r" === c;
-      }
-      function parseSelector(subselects, selector, options, selectorIndex) {
-        var _a, _b;
+      var ElementType = __importStar(__webpack_require__(9960)), entities_1 = __webpack_require__(141), foreignNames_1 = __webpack_require__(7837), unencodedElements = new Set([ "style", "script", "xmp", "iframe", "noembed", "noframes", "plaintext", "noscript" ]);
+      var singleTag = new Set([ "area", "base", "basefont", "br", "col", "command", "embed", "frame", "hr", "img", "input", "isindex", "keygen", "link", "meta", "param", "source", "track", "wbr" ]);
+      function render(node, options) {
         void 0 === options && (options = {});
-        var tokens = [], sawWS = !1;
-        function getName(offset) {
-          var match = selector.slice(selectorIndex + offset).match(reName);
-          if (!match) throw new Error("Expected name, found " + selector.slice(selectorIndex));
-          var name = match[0];
-          return selectorIndex += offset + name.length, unescapeCSS(name);
-        }
-        function stripWhitespace(offset) {
-          for (;isWhitespace(selector.charAt(selectorIndex + offset)); ) offset++;
-          selectorIndex += offset;
-        }
-        function isEscaped(pos) {
-          for (var slashCount = 0; "\\" === selector.charAt(--pos); ) slashCount++;
-          return 1 == (1 & slashCount);
-        }
-        function ensureNotTraversal() {
-          if (tokens.length > 0 && isTraversal(tokens[tokens.length - 1])) throw new Error("Did not expect successive traversals.");
-        }
-        for (stripWhitespace(0); "" !== selector; ) {
-          var firstChar = selector.charAt(selectorIndex);
-          if (isWhitespace(firstChar)) sawWS = !0, stripWhitespace(1); else if (firstChar in Traversals) ensureNotTraversal(), 
-          tokens.push({
-            type: Traversals[firstChar]
-          }), sawWS = !1, stripWhitespace(1); else if ("," === firstChar) {
-            if (0 === tokens.length) throw new Error("Empty sub-selector");
-            subselects.push(tokens), tokens = [], sawWS = !1, stripWhitespace(1);
-          } else if (selector.startsWith("/*", selectorIndex)) {
-            var endIndex = selector.indexOf("*/", selectorIndex + 2);
-            if (endIndex < 0) throw new Error("Comment was not terminated");
-            selectorIndex = endIndex + 2;
-          } else if (sawWS && (ensureNotTraversal(), tokens.push({
-            type: "descendant"
-          }), sawWS = !1), firstChar in attribSelectors) {
-            var _c = attribSelectors[firstChar], name_1 = _c[0], action = _c[1];
-            tokens.push({
-              type: "attribute",
-              name: name_1,
-              action,
-              value: getName(1),
-              namespace: null,
-              ignoreCase: !!options.xmlMode && null
-            });
-          } else if ("[" === firstChar) {
-            stripWhitespace(1);
-            var namespace = null;
-            "|" === selector.charAt(selectorIndex) && (namespace = "", selectorIndex += 1), 
-            selector.startsWith("*|", selectorIndex) && (namespace = "*", selectorIndex += 2);
-            var name_2 = getName(0);
-            null === namespace && "|" === selector.charAt(selectorIndex) && "=" !== selector.charAt(selectorIndex + 1) && (namespace = name_2, 
-            name_2 = getName(1)), (null !== (_a = options.lowerCaseAttributeNames) && void 0 !== _a ? _a : !options.xmlMode) && (name_2 = name_2.toLowerCase()), 
-            stripWhitespace(0);
-            action = "exists";
-            var possibleAction = actionTypes.get(selector.charAt(selectorIndex));
-            if (possibleAction) {
-              if (action = possibleAction, "=" !== selector.charAt(selectorIndex + 1)) throw new Error("Expected `=`");
-              stripWhitespace(2);
-            } else "=" === selector.charAt(selectorIndex) && (action = "equals", stripWhitespace(1));
-            var value = "", ignoreCase = null;
-            if ("exists" !== action) {
-              if (quotes.has(selector.charAt(selectorIndex))) {
-                for (var quote = selector.charAt(selectorIndex), sectionEnd = selectorIndex + 1; sectionEnd < selector.length && (selector.charAt(sectionEnd) !== quote || isEscaped(sectionEnd)); ) sectionEnd += 1;
-                if (selector.charAt(sectionEnd) !== quote) throw new Error("Attribute value didn't end");
-                value = unescapeCSS(selector.slice(selectorIndex + 1, sectionEnd)), selectorIndex = sectionEnd + 1;
-              } else {
-                for (var valueStart = selectorIndex; selectorIndex < selector.length && (!isWhitespace(selector.charAt(selectorIndex)) && "]" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex)); ) selectorIndex += 1;
-                value = unescapeCSS(selector.slice(valueStart, selectorIndex));
-              }
-              stripWhitespace(0);
-              var forceIgnore = selector.charAt(selectorIndex);
-              "s" === forceIgnore || "S" === forceIgnore ? (ignoreCase = !1, stripWhitespace(1)) : "i" !== forceIgnore && "I" !== forceIgnore || (ignoreCase = !0, 
-              stripWhitespace(1));
-            }
-            if (options.xmlMode || null != ignoreCase || (ignoreCase = caseInsensitiveAttributes.has(name_2)), 
-            "]" !== selector.charAt(selectorIndex)) throw new Error("Attribute selector didn't terminate");
-            selectorIndex += 1;
-            var attributeSelector = {
-              type: "attribute",
-              name: name_2,
-              action,
-              value,
-              namespace,
-              ignoreCase
-            };
-            tokens.push(attributeSelector);
-          } else if (":" === firstChar) {
-            if (":" === selector.charAt(selectorIndex + 1)) {
-              tokens.push({
-                type: "pseudo-element",
-                name: getName(2).toLowerCase()
-              });
-              continue;
-            }
-            var name_3 = getName(1).toLowerCase(), data = null;
-            if ("(" === selector.charAt(selectorIndex)) if (unpackPseudos.has(name_3)) {
-              if (quotes.has(selector.charAt(selectorIndex + 1))) throw new Error("Pseudo-selector " + name_3 + " cannot be quoted");
-              if (selectorIndex = parseSelector(data = [], selector, options, selectorIndex + 1), 
-              ")" !== selector.charAt(selectorIndex)) throw new Error("Missing closing parenthesis in :" + name_3 + " (" + selector + ")");
-              selectorIndex += 1;
-            } else {
-              for (var start = selectorIndex += 1, counter = 1; counter > 0 && selectorIndex < selector.length; selectorIndex++) "(" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex) ? ")" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex) || counter-- : counter++;
-              if (counter) throw new Error("Parenthesis not matched");
-              if (data = selector.slice(start, selectorIndex - 1), stripQuotesFromPseudos.has(name_3)) {
-                var quot = data.charAt(0);
-                quot === data.slice(-1) && quotes.has(quot) && (data = data.slice(1, -1)), data = unescapeCSS(data);
-              }
-            }
-            tokens.push({
-              type: "pseudo",
-              name: name_3,
-              data
-            });
-          } else {
-            namespace = null;
-            var name_4 = void 0;
-            if ("*" === firstChar) selectorIndex += 1, name_4 = "*"; else {
-              if (!reName.test(selector.slice(selectorIndex))) return tokens.length && "descendant" === tokens[tokens.length - 1].type && tokens.pop(), 
-              addToken(subselects, tokens), selectorIndex;
-              "|" === selector.charAt(selectorIndex) && (namespace = "", selectorIndex += 1), 
-              name_4 = getName(0);
-            }
-            "|" === selector.charAt(selectorIndex) && (namespace = name_4, "*" === selector.charAt(selectorIndex + 1) ? (name_4 = "*", 
-            selectorIndex += 2) : name_4 = getName(1)), "*" === name_4 ? tokens.push({
-              type: "universal",
-              namespace
-            }) : ((null !== (_b = options.lowerCaseTags) && void 0 !== _b ? _b : !options.xmlMode) && (name_4 = name_4.toLowerCase()), 
-            tokens.push({
-              type: "tag",
-              name: name_4,
-              namespace
+        for (var nodes = ("length" in node ? node : [ node ]), output = "", i = 0; i < nodes.length; i++) output += renderNode(nodes[i], options);
+        return output;
+      }
+      function renderNode(node, options) {
+        switch (node.type) {
+         case ElementType.Root:
+          return render(node.children, options);
+
+         case ElementType.Directive:
+         case ElementType.Doctype:
+          return "<" + node.data + ">";
+
+         case ElementType.Comment:
+          return function(elem) {
+            return "\x3c!--" + elem.data + "--\x3e";
+          }(node);
+
+         case ElementType.CDATA:
+          return function(elem) {
+            return "<![CDATA[" + elem.children[0].data + "]]>";
+          }(node);
+
+         case ElementType.Script:
+         case ElementType.Style:
+         case ElementType.Tag:
+          return function(elem, opts) {
+            var _a;
+            "foreign" === opts.xmlMode && (elem.name = null !== (_a = foreignNames_1.elementNames.get(elem.name)) && void 0 !== _a ? _a : elem.name, 
+            elem.parent && foreignModeIntegrationPoints.has(elem.parent.name) && (opts = __assign(__assign({}, opts), {
+              xmlMode: !1
+            })));
+            !opts.xmlMode && foreignElements.has(elem.name) && (opts = __assign(__assign({}, opts), {
+              xmlMode: "foreign"
             }));
-          }
-        }
-        return addToken(subselects, tokens), selectorIndex;
-      }
-      function addToken(subselects, tokens) {
-        if (subselects.length > 0 && 0 === tokens.length) throw new Error("Empty sub-selector");
-        subselects.push(tokens);
-      }
-      exports.default = function(selector, options) {
-        var subselects = [], endIndex = parseSelector(subselects, "" + selector, options, 0);
-        if (endIndex < selector.length) throw new Error("Unmatched selector: " + selector.slice(endIndex));
-        return subselects;
-      };
-    },
-    6868: function(__unused_webpack_module, exports) {
-      "use strict";
-      var __spreadArray = this && this.__spreadArray || function(to, from, pack) {
-        if (pack || 2 === arguments.length) for (var ar, i = 0, l = from.length; i < l; i++) !ar && i in from || (ar || (ar = Array.prototype.slice.call(from, 0, i)), 
-        ar[i] = from[i]);
-        return to.concat(ar || Array.prototype.slice.call(from));
-      };
-      Object.defineProperty(exports, "__esModule", {
-        value: !0
-      });
-      var actionTypes = {
-        equals: "",
-        element: "~",
-        start: "^",
-        end: "$",
-        any: "*",
-        not: "!",
-        hyphen: "|"
-      }, charsToEscape = new Set(__spreadArray(__spreadArray([], Object.keys(actionTypes).map((function(typeKey) {
-        return actionTypes[typeKey];
-      })).filter(Boolean), !0), [ ":", "[", "]", " ", "\\", "(", ")", "'" ], !1));
-      function stringify(selector) {
-        return selector.map(stringifySubselector).join(", ");
-      }
-      function stringifySubselector(token) {
-        return token.map(stringifyToken).join("");
-      }
-      function stringifyToken(token) {
-        switch (token.type) {
-         case "child":
-          return " > ";
+            var tag = "<" + elem.name, attribs = function(attributes, opts) {
+              if (attributes) return Object.keys(attributes).map((function(key) {
+                var _a, _b, value = null !== (_a = attributes[key]) && void 0 !== _a ? _a : "";
+                return "foreign" === opts.xmlMode && (key = null !== (_b = foreignNames_1.attributeNames.get(key)) && void 0 !== _b ? _b : key), 
+                opts.emptyAttrs || opts.xmlMode || "" !== value ? key + '="' + (!1 !== opts.decodeEntities ? entities_1.encodeXML(value) : value.replace(/"/g, "&quot;")) + '"' : key;
+              })).join(" ");
+            }(elem.attribs, opts);
+            attribs && (tag += " " + attribs);
+            0 === elem.children.length && (opts.xmlMode ? !1 !== opts.selfClosingTags : opts.selfClosingTags && singleTag.has(elem.name)) ? (opts.xmlMode || (tag += " "), 
+            tag += "/>") : (tag += ">", elem.children.length > 0 && (tag += render(elem.children, opts)), 
+            !opts.xmlMode && singleTag.has(elem.name) || (tag += "</" + elem.name + ">"));
+            return tag;
+          }(node, options);
 
-         case "parent":
-          return " < ";
-
-         case "sibling":
-          return " ~ ";
-
-         case "adjacent":
-          return " + ";
-
-         case "descendant":
-          return " ";
-
-         case "universal":
-          return getNamespace(token.namespace) + "*";
-
-         case "tag":
-          return getNamespacedName(token);
-
-         case "pseudo-element":
-          return "::" + escapeName(token.name);
-
-         case "pseudo":
-          return null === token.data ? ":" + escapeName(token.name) : "string" == typeof token.data ? ":" + escapeName(token.name) + "(" + escapeName(token.data) + ")" : ":" + escapeName(token.name) + "(" + stringify(token.data) + ")";
-
-         case "attribute":
-          if ("id" === token.name && "equals" === token.action && !token.ignoreCase && !token.namespace) return "#" + escapeName(token.value);
-          if ("class" === token.name && "element" === token.action && !token.ignoreCase && !token.namespace) return "." + escapeName(token.value);
-          var name_1 = getNamespacedName(token);
-          return "exists" === token.action ? "[" + name_1 + "]" : "[" + name_1 + actionTypes[token.action] + "='" + escapeName(token.value) + "'" + (token.ignoreCase ? "i" : !1 === token.ignoreCase ? "s" : "") + "]";
+         case ElementType.Text:
+          return function(elem, opts) {
+            var data = elem.data || "";
+            !1 === opts.decodeEntities || !opts.xmlMode && elem.parent && unencodedElements.has(elem.parent.name) || (data = entities_1.encodeXML(data));
+            return data;
+          }(node, options);
         }
       }
-      function getNamespacedName(token) {
-        return "" + getNamespace(token.namespace) + escapeName(token.name);
-      }
-      function getNamespace(namespace) {
-        return null !== namespace ? ("*" === namespace ? "*" : escapeName(namespace)) + "|" : "";
-      }
-      function escapeName(str) {
-        return str.split("").map((function(c) {
-          return charsToEscape.has(c) ? "\\" + c : c;
-        })).join("");
-      }
-      exports.default = stringify;
-    },
-    7837: (__unused_webpack_module, exports) => {
-      "use strict";
-      Object.defineProperty(exports, "__esModule", {
-        value: !0
-      }), exports.attributeNames = exports.elementNames = void 0, exports.elementNames = new Map([ [ "altglyph", "altGlyph" ], [ "altglyphdef", "altGlyphDef" ], [ "altglyphitem", "altGlyphItem" ], [ "animatecolor", "animateColor" ], [ "animatemotion", "animateMotion" ], [ "animatetransform", "animateTransform" ], [ "clippath", "clipPath" ], [ "feblend", "feBlend" ], [ "fecolormatrix", "feColorMatrix" ], [ "fecomponenttransfer", "feComponentTransfer" ], [ "fecomposite", "feComposite" ], [ "feconvolvematrix", "feConvolveMatrix" ], [ "fediffuselighting", "feDiffuseLighting" ], [ "fedisplacementmap", "feDisplacementMap" ], [ "fedistantlight", "feDistantLight" ], [ "fedropshadow", "feDropShadow" ], [ "feflood", "feFlood" ], [ "fefunca", "feFuncA" ], [ "fefuncb", "feFuncB" ], [ "fefuncg", "feFuncG" ], [ "fefuncr", "feFuncR" ], [ "fegaussianblur", "feGaussianBlur" ], [ "feimage", "feImage" ], [ "femerge", "feMerge" ], [ "femergenode", "feMergeNode" ], [ "femorphology", "feMorphology" ], [ "feoffset", "feOffset" ], [ "fepointlight", "fePointLight" ], [ "fespecularlighting", "feSpecularLighting" ], [ "fespotlight", "feSpotLight" ], [ "fetile", "feTile" ], [ "feturbulence", "feTurbulence" ], [ "foreignobject", "foreignObject" ], [ "glyphref", "glyphRef" ], [ "lineargradient", "linearGradient" ], [ "radialgradient", "radialGradient" ], [ "textpath", "textPath" ] ]), 
-      exports.attributeNames = new Map([ [ "definitionurl", "definitionURL" ], [ "attributename", "attributeName" ], [ "attributetype", "attributeType" ], [ "basefrequency", "baseFrequency" ], [ "baseprofile", "baseProfile" ], [ "calcmode", "calcMode" ], [ "clippathunits", "clipPathUnits" ], [ "diffuseconstant", "diffuseConstant" ], [ "edgemode", "edgeMode" ], [ "filterunits", "filterUnits" ], [ "glyphref", "glyphRef" ], [ "gradienttransform", "gradientTransform" ], [ "gradientunits", "gradientUnits" ], [ "kernelmatrix", "kernelMatrix" ], [ "kernelunitlength", "kernelUnitLength" ], [ "keypoints", "keyPoints" ], [ "keysplines", "keySplines" ], [ "keytimes", "keyTimes" ], [ "lengthadjust", "lengthAdjust" ], [ "limitingconeangle", "limitingConeAngle" ], [ "markerheight", "markerHeight" ], [ "markerunits", "markerUnits" ], [ "markerwidth", "markerWidth" ], [ "maskcontentunits", "maskContentUnits" ], [ "maskunits", "maskUnits" ], [ "numoctaves", "numOctaves" ], [ "pathlength", "pathLength" ], [ "patterncontentunits", "patternContentUnits" ], [ "patterntransform", "patternTransform" ], [ "patternunits", "patternUnits" ], [ "pointsatx", "pointsAtX" ], [ "pointsaty", "pointsAtY" ], [ "pointsatz", "pointsAtZ" ], [ "preservealpha", "preserveAlpha" ], [ "preserveaspectratio", "preserveAspectRatio" ], [ "primitiveunits", "primitiveUnits" ], [ "refx", "refX" ], [ "refy", "refY" ], [ "repeatcount", "repeatCount" ], [ "repeatdur", "repeatDur" ], [ "requiredextensions", "requiredExtensions" ], [ "requiredfeatures", "requiredFeatures" ], [ "specularconstant", "specularConstant" ], [ "specularexponent", "specularExponent" ], [ "spreadmethod", "spreadMethod" ], [ "startoffset", "startOffset" ], [ "stddeviation", "stdDeviation" ], [ "stitchtiles", "stitchTiles" ], [ "surfacescale", "surfaceScale" ], [ "systemlanguage", "systemLanguage" ], [ "tablevalues", "tableValues" ], [ "targetx", "targetX" ], [ "targety", "targetY" ], [ "textlength", "textLength" ], [ "viewbox", "viewBox" ], [ "viewtarget", "viewTarget" ], [ "xchannelselector", "xChannelSelector" ], [ "ychannelselector", "yChannelSelector" ], [ "zoomandpan", "zoomAndPan" ] ]);
+      exports.default = render;
+      var foreignModeIntegrationPoints = new Set([ "mi", "mo", "mn", "ms", "mtext", "annotation-xml", "foreignObject", "desc", "title" ]), foreignElements = new Set([ "svg", "math" ]);
     },
     9960: (__unused_webpack_module, exports) => {
       "use strict";
@@ -1685,7 +1485,7 @@
       Object.defineProperty(exports, "__esModule", {
         value: !0
       }), exports.innerText = exports.textContent = exports.getText = exports.getInnerHTML = exports.getOuterHTML = void 0;
-      var domhandler_1 = __webpack_require__(7915), dom_serializer_1 = __importDefault(__webpack_require__(8756)), domelementtype_1 = __webpack_require__(9960);
+      var domhandler_1 = __webpack_require__(7915), dom_serializer_1 = __importDefault(__webpack_require__(7220)), domelementtype_1 = __webpack_require__(9960);
       function getOuterHTML(node, options) {
         return (0, dom_serializer_1.default)(node, options);
       }
@@ -1815,102 +1615,7 @@
         }
       };
     },
-    8756: function(__unused_webpack_module, exports, __webpack_require__) {
-      "use strict";
-      var __assign = this && this.__assign || function() {
-        return __assign = Object.assign || function(t) {
-          for (var s, i = 1, n = arguments.length; i < n; i++) for (var p in s = arguments[i]) Object.prototype.hasOwnProperty.call(s, p) && (t[p] = s[p]);
-          return t;
-        }, __assign.apply(this, arguments);
-      }, __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-        void 0 === k2 && (k2 = k), Object.defineProperty(o, k2, {
-          enumerable: !0,
-          get: function() {
-            return m[k];
-          }
-        });
-      } : function(o, m, k, k2) {
-        void 0 === k2 && (k2 = k), o[k2] = m[k];
-      }), __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-        Object.defineProperty(o, "default", {
-          enumerable: !0,
-          value: v
-        });
-      } : function(o, v) {
-        o.default = v;
-      }), __importStar = this && this.__importStar || function(mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (null != mod) for (var k in mod) "default" !== k && Object.prototype.hasOwnProperty.call(mod, k) && __createBinding(result, mod, k);
-        return __setModuleDefault(result, mod), result;
-      };
-      Object.defineProperty(exports, "__esModule", {
-        value: !0
-      });
-      var ElementType = __importStar(__webpack_require__(9960)), entities_1 = __webpack_require__(4744), foreignNames_1 = __webpack_require__(7837), unencodedElements = new Set([ "style", "script", "xmp", "iframe", "noembed", "noframes", "plaintext", "noscript" ]);
-      var singleTag = new Set([ "area", "base", "basefont", "br", "col", "command", "embed", "frame", "hr", "img", "input", "isindex", "keygen", "link", "meta", "param", "source", "track", "wbr" ]);
-      function render(node, options) {
-        void 0 === options && (options = {});
-        for (var nodes = ("length" in node ? node : [ node ]), output = "", i = 0; i < nodes.length; i++) output += renderNode(nodes[i], options);
-        return output;
-      }
-      function renderNode(node, options) {
-        switch (node.type) {
-         case ElementType.Root:
-          return render(node.children, options);
-
-         case ElementType.Directive:
-         case ElementType.Doctype:
-          return "<" + node.data + ">";
-
-         case ElementType.Comment:
-          return function(elem) {
-            return "\x3c!--" + elem.data + "--\x3e";
-          }(node);
-
-         case ElementType.CDATA:
-          return function(elem) {
-            return "<![CDATA[" + elem.children[0].data + "]]>";
-          }(node);
-
-         case ElementType.Script:
-         case ElementType.Style:
-         case ElementType.Tag:
-          return function(elem, opts) {
-            var _a;
-            "foreign" === opts.xmlMode && (elem.name = null !== (_a = foreignNames_1.elementNames.get(elem.name)) && void 0 !== _a ? _a : elem.name, 
-            elem.parent && foreignModeIntegrationPoints.has(elem.parent.name) && (opts = __assign(__assign({}, opts), {
-              xmlMode: !1
-            })));
-            !opts.xmlMode && foreignElements.has(elem.name) && (opts = __assign(__assign({}, opts), {
-              xmlMode: "foreign"
-            }));
-            var tag = "<" + elem.name, attribs = function(attributes, opts) {
-              if (attributes) return Object.keys(attributes).map((function(key) {
-                var _a, _b, value = null !== (_a = attributes[key]) && void 0 !== _a ? _a : "";
-                return "foreign" === opts.xmlMode && (key = null !== (_b = foreignNames_1.attributeNames.get(key)) && void 0 !== _b ? _b : key), 
-                opts.emptyAttrs || opts.xmlMode || "" !== value ? key + '="' + (!1 !== opts.decodeEntities ? entities_1.encodeXML(value) : value.replace(/"/g, "&quot;")) + '"' : key;
-              })).join(" ");
-            }(elem.attribs, opts);
-            attribs && (tag += " " + attribs);
-            0 === elem.children.length && (opts.xmlMode ? !1 !== opts.selfClosingTags : opts.selfClosingTags && singleTag.has(elem.name)) ? (opts.xmlMode || (tag += " "), 
-            tag += "/>") : (tag += ">", elem.children.length > 0 && (tag += render(elem.children, opts)), 
-            !opts.xmlMode && singleTag.has(elem.name) || (tag += "</" + elem.name + ">"));
-            return tag;
-          }(node, options);
-
-         case ElementType.Text:
-          return function(elem, opts) {
-            var data = elem.data || "";
-            !1 === opts.decodeEntities || !opts.xmlMode && elem.parent && unencodedElements.has(elem.parent.name) || (data = entities_1.encodeXML(data));
-            return data;
-          }(node, options);
-        }
-      }
-      exports.default = render;
-      var foreignModeIntegrationPoints = new Set([ "mi", "mo", "mn", "ms", "mtext", "annotation-xml", "foreignObject", "desc", "title" ]), foreignElements = new Set([ "svg", "math" ]);
-    },
-    4744: function(__unused_webpack_module, exports, __webpack_require__) {
+    141: function(__unused_webpack_module, exports, __webpack_require__) {
       "use strict";
       var __importDefault = this && this.__importDefault || function(mod) {
         return mod && mod.__esModule ? mod : {
@@ -1952,6 +1657,189 @@
         return "&#x" + (c.length > 1 ? getCodePoint(c) : c.charCodeAt(0)).toString(16).toUpperCase() + ";";
       }
       var reEscapeChars = new RegExp(xmlReplacer.source + "|" + reNonASCII.source, "g");
+    },
+    6948: function(__unused_webpack_module, exports) {
+      "use strict";
+      var __spreadArray = this && this.__spreadArray || function(to, from, pack) {
+        if (pack || 2 === arguments.length) for (var ar, i = 0, l = from.length; i < l; i++) !ar && i in from || (ar || (ar = Array.prototype.slice.call(from, 0, i)), 
+        ar[i] = from[i]);
+        return to.concat(ar || Array.prototype.slice.call(from));
+      };
+      Object.defineProperty(exports, "__esModule", {
+        value: !0
+      }), exports.parse = exports.isTraversal = void 0;
+      var reName = /^[^\\#]?(?:\\(?:[\da-f]{1,6}\s?|.)|[\w\-\u00b0-\uFFFF])+/, reEscape = /\\([\da-f]{1,6}\s?|(\s)|.)/gi, actionTypes = new Map([ [ "~", "element" ], [ "^", "start" ], [ "$", "end" ], [ "*", "any" ], [ "!", "not" ], [ "|", "hyphen" ] ]), Traversals = {
+        ">": "child",
+        "<": "parent",
+        "~": "sibling",
+        "+": "adjacent"
+      }, attribSelectors = {
+        "#": [ "id", "equals" ],
+        ".": [ "class", "element" ]
+      }, unpackPseudos = new Set([ "has", "not", "matches", "is", "where", "host", "host-context" ]), traversalNames = new Set(__spreadArray([ "descendant" ], Object.keys(Traversals).map((function(k) {
+        return Traversals[k];
+      })), !0)), caseInsensitiveAttributes = new Set([ "accept", "accept-charset", "align", "alink", "axis", "bgcolor", "charset", "checked", "clear", "codetype", "color", "compact", "declare", "defer", "dir", "direction", "disabled", "enctype", "face", "frame", "hreflang", "http-equiv", "lang", "language", "link", "media", "method", "multiple", "nohref", "noresize", "noshade", "nowrap", "readonly", "rel", "rev", "rules", "scope", "scrolling", "selected", "shape", "target", "text", "type", "valign", "valuetype", "vlink" ]);
+      function isTraversal(selector) {
+        return traversalNames.has(selector.type);
+      }
+      exports.isTraversal = isTraversal;
+      var stripQuotesFromPseudos = new Set([ "contains", "icontains" ]), quotes = new Set([ '"', "'" ]);
+      function funescape(_, escaped, escapedWhitespace) {
+        var high = parseInt(escaped, 16) - 65536;
+        return high != high || escapedWhitespace ? escaped : high < 0 ? String.fromCharCode(high + 65536) : String.fromCharCode(high >> 10 | 55296, 1023 & high | 56320);
+      }
+      function unescapeCSS(str) {
+        return str.replace(reEscape, funescape);
+      }
+      function isWhitespace(c) {
+        return " " === c || "\n" === c || "\t" === c || "\f" === c || "\r" === c;
+      }
+      function parseSelector(subselects, selector, options, selectorIndex) {
+        var _a, _b;
+        void 0 === options && (options = {});
+        var tokens = [], sawWS = !1;
+        function getName(offset) {
+          var match = selector.slice(selectorIndex + offset).match(reName);
+          if (!match) throw new Error("Expected name, found " + selector.slice(selectorIndex));
+          var name = match[0];
+          return selectorIndex += offset + name.length, unescapeCSS(name);
+        }
+        function stripWhitespace(offset) {
+          for (;isWhitespace(selector.charAt(selectorIndex + offset)); ) offset++;
+          selectorIndex += offset;
+        }
+        function isEscaped(pos) {
+          for (var slashCount = 0; "\\" === selector.charAt(--pos); ) slashCount++;
+          return 1 == (1 & slashCount);
+        }
+        function ensureNotTraversal() {
+          if (tokens.length > 0 && isTraversal(tokens[tokens.length - 1])) throw new Error("Did not expect successive traversals.");
+        }
+        for (stripWhitespace(0); "" !== selector; ) {
+          var firstChar = selector.charAt(selectorIndex);
+          if (isWhitespace(firstChar)) sawWS = !0, stripWhitespace(1); else if (firstChar in Traversals) ensureNotTraversal(), 
+          tokens.push({
+            type: Traversals[firstChar]
+          }), sawWS = !1, stripWhitespace(1); else if ("," === firstChar) {
+            if (0 === tokens.length) throw new Error("Empty sub-selector");
+            subselects.push(tokens), tokens = [], sawWS = !1, stripWhitespace(1);
+          } else if (selector.startsWith("/*", selectorIndex)) {
+            var endIndex = selector.indexOf("*/", selectorIndex + 2);
+            if (endIndex < 0) throw new Error("Comment was not terminated");
+            selectorIndex = endIndex + 2;
+          } else if (sawWS && (ensureNotTraversal(), tokens.push({
+            type: "descendant"
+          }), sawWS = !1), firstChar in attribSelectors) {
+            var _c = attribSelectors[firstChar], name_1 = _c[0], action = _c[1];
+            tokens.push({
+              type: "attribute",
+              name: name_1,
+              action,
+              value: getName(1),
+              namespace: null,
+              ignoreCase: !!options.xmlMode && null
+            });
+          } else if ("[" === firstChar) {
+            stripWhitespace(1);
+            var namespace = null;
+            "|" === selector.charAt(selectorIndex) && (namespace = "", selectorIndex += 1), 
+            selector.startsWith("*|", selectorIndex) && (namespace = "*", selectorIndex += 2);
+            var name_2 = getName(0);
+            null === namespace && "|" === selector.charAt(selectorIndex) && "=" !== selector.charAt(selectorIndex + 1) && (namespace = name_2, 
+            name_2 = getName(1)), (null !== (_a = options.lowerCaseAttributeNames) && void 0 !== _a ? _a : !options.xmlMode) && (name_2 = name_2.toLowerCase()), 
+            stripWhitespace(0);
+            action = "exists";
+            var possibleAction = actionTypes.get(selector.charAt(selectorIndex));
+            if (possibleAction) {
+              if (action = possibleAction, "=" !== selector.charAt(selectorIndex + 1)) throw new Error("Expected `=`");
+              stripWhitespace(2);
+            } else "=" === selector.charAt(selectorIndex) && (action = "equals", stripWhitespace(1));
+            var value = "", ignoreCase = null;
+            if ("exists" !== action) {
+              if (quotes.has(selector.charAt(selectorIndex))) {
+                for (var quote = selector.charAt(selectorIndex), sectionEnd = selectorIndex + 1; sectionEnd < selector.length && (selector.charAt(sectionEnd) !== quote || isEscaped(sectionEnd)); ) sectionEnd += 1;
+                if (selector.charAt(sectionEnd) !== quote) throw new Error("Attribute value didn't end");
+                value = unescapeCSS(selector.slice(selectorIndex + 1, sectionEnd)), selectorIndex = sectionEnd + 1;
+              } else {
+                for (var valueStart = selectorIndex; selectorIndex < selector.length && (!isWhitespace(selector.charAt(selectorIndex)) && "]" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex)); ) selectorIndex += 1;
+                value = unescapeCSS(selector.slice(valueStart, selectorIndex));
+              }
+              stripWhitespace(0);
+              var forceIgnore = selector.charAt(selectorIndex);
+              "s" === forceIgnore || "S" === forceIgnore ? (ignoreCase = !1, stripWhitespace(1)) : "i" !== forceIgnore && "I" !== forceIgnore || (ignoreCase = !0, 
+              stripWhitespace(1));
+            }
+            if (options.xmlMode || null != ignoreCase || (ignoreCase = caseInsensitiveAttributes.has(name_2)), 
+            "]" !== selector.charAt(selectorIndex)) throw new Error("Attribute selector didn't terminate");
+            selectorIndex += 1;
+            var attributeSelector = {
+              type: "attribute",
+              name: name_2,
+              action,
+              value,
+              namespace,
+              ignoreCase
+            };
+            tokens.push(attributeSelector);
+          } else if (":" === firstChar) {
+            if (":" === selector.charAt(selectorIndex + 1)) {
+              tokens.push({
+                type: "pseudo-element",
+                name: getName(2).toLowerCase()
+              });
+              continue;
+            }
+            var name_3 = getName(1).toLowerCase(), data = null;
+            if ("(" === selector.charAt(selectorIndex)) if (unpackPseudos.has(name_3)) {
+              if (quotes.has(selector.charAt(selectorIndex + 1))) throw new Error("Pseudo-selector " + name_3 + " cannot be quoted");
+              if (selectorIndex = parseSelector(data = [], selector, options, selectorIndex + 1), 
+              ")" !== selector.charAt(selectorIndex)) throw new Error("Missing closing parenthesis in :" + name_3 + " (" + selector + ")");
+              selectorIndex += 1;
+            } else {
+              for (var start = selectorIndex += 1, counter = 1; counter > 0 && selectorIndex < selector.length; selectorIndex++) "(" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex) ? ")" !== selector.charAt(selectorIndex) || isEscaped(selectorIndex) || counter-- : counter++;
+              if (counter) throw new Error("Parenthesis not matched");
+              if (data = selector.slice(start, selectorIndex - 1), stripQuotesFromPseudos.has(name_3)) {
+                var quot = data.charAt(0);
+                quot === data.slice(-1) && quotes.has(quot) && (data = data.slice(1, -1)), data = unescapeCSS(data);
+              }
+            }
+            tokens.push({
+              type: "pseudo",
+              name: name_3,
+              data
+            });
+          } else {
+            namespace = null;
+            var name_4 = void 0;
+            if ("*" === firstChar) selectorIndex += 1, name_4 = "*"; else {
+              if (!reName.test(selector.slice(selectorIndex))) return tokens.length && "descendant" === tokens[tokens.length - 1].type && tokens.pop(), 
+              addToken(subselects, tokens), selectorIndex;
+              "|" === selector.charAt(selectorIndex) && (namespace = "", selectorIndex += 1), 
+              name_4 = getName(0);
+            }
+            "|" === selector.charAt(selectorIndex) && (namespace = name_4, "*" === selector.charAt(selectorIndex + 1) ? (name_4 = "*", 
+            selectorIndex += 2) : name_4 = getName(1)), "*" === name_4 ? tokens.push({
+              type: "universal",
+              namespace
+            }) : ((null !== (_b = options.lowerCaseTags) && void 0 !== _b ? _b : !options.xmlMode) && (name_4 = name_4.toLowerCase()), 
+            tokens.push({
+              type: "tag",
+              name: name_4,
+              namespace
+            }));
+          }
+        }
+        return addToken(subselects, tokens), selectorIndex;
+      }
+      function addToken(subselects, tokens) {
+        if (subselects.length > 0 && 0 === tokens.length) throw new Error("Empty sub-selector");
+        subselects.push(tokens);
+      }
+      exports.parse = exports.default = function(selector, options) {
+        var subselects = [], endIndex = parseSelector(subselects, "" + selector, options, 0);
+        if (endIndex < selector.length) throw new Error("Unmatched selector: " + selector.slice(endIndex));
+        return subselects;
+      };
     },
     2586: module => {
       "use strict";

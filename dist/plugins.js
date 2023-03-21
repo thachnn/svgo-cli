@@ -1,293 +1,5 @@
 (() => {
   var __webpack_modules__ = {
-    2967: (module, __unused_webpack_exports, __webpack_require__) => {
-      "use strict";
-      const {createPreset} = __webpack_require__(4096), presetDefault = createPreset({
-        name: "presetDefault",
-        plugins: [ __webpack_require__(9776), __webpack_require__(490), __webpack_require__(5013), __webpack_require__(8555), __webpack_require__(8911), __webpack_require__(514), __webpack_require__(7329), __webpack_require__(7854), __webpack_require__(3217), __webpack_require__(9401), __webpack_require__(3506), __webpack_require__(9742), __webpack_require__(2660), __webpack_require__(3268), __webpack_require__(2271), __webpack_require__(2434), __webpack_require__(3657), __webpack_require__(5491), __webpack_require__(9035), __webpack_require__(8203), __webpack_require__(1151), __webpack_require__(3783), __webpack_require__(296), __webpack_require__(1123), __webpack_require__(503), __webpack_require__(8213), __webpack_require__(6603), __webpack_require__(175), __webpack_require__(4812), __webpack_require__(6045), __webpack_require__(6193), __webpack_require__(3444), __webpack_require__(8541) ]
-      });
-      module.exports = presetDefault;
-    },
-    8995: (__unused_webpack_module, exports) => {
-      "use strict";
-      exports.type = "visitor", exports.name = "removeViewBox", exports.active = !1, exports.description = "removes viewBox attribute when possible";
-      const viewBoxElems = [ "svg", "pattern", "symbol" ];
-      exports.fn = () => ({
-        element: {
-          enter: (node, parentNode) => {
-            if (viewBoxElems.includes(node.name) && null != node.attributes.viewBox && null != node.attributes.width && null != node.attributes.height) {
-              if ("svg" === node.name && "root" !== parentNode.type) return;
-              const nums = node.attributes.viewBox.split(/[ ,]+/g);
-              "0" === nums[0] && "0" === nums[1] && node.attributes.width.replace(/px$/, "") === nums[2] && node.attributes.height.replace(/px$/, "") === nums[3] && delete node.attributes.viewBox;
-            }
-          }
-        }
-      });
-    },
-    503: (__unused_webpack_module, exports, __webpack_require__) => {
-      "use strict";
-      const {collectStylesheet, computeStyle} = __webpack_require__(1284), {pathElems} = __webpack_require__(6556), {path2js, js2path} = __webpack_require__(3315), {applyTransforms} = __webpack_require__(6101), {cleanupOutData} = __webpack_require__(2199);
-      let roundData, precision, error, arcThreshold, arcTolerance;
-      exports.name = "convertPathData", exports.type = "visitor", exports.active = !0, 
-      exports.description = "optimizes path data: writes in shorter form, applies transformations", 
-      exports.params = {
-        applyTransforms: !0,
-        applyTransformsStroked: !0,
-        makeArcs: {
-          threshold: 2.5,
-          tolerance: .5
-        },
-        straightCurves: !0,
-        lineShorthands: !0,
-        curveSmoothShorthands: !1,
-        floatPrecision: 3,
-        transformPrecision: 5,
-        removeUseless: !0,
-        collapseRepeated: !0,
-        utilizeAbsolute: !0,
-        leadingZero: !0,
-        negativeExtraSpace: !0,
-        noSpaceAfterFlags: !1,
-        forceAbsolutePath: !1
-      }, exports.fn = (root, params) => {
-        const stylesheet = collectStylesheet(root);
-        return {
-          element: {
-            enter: node => {
-              if (pathElems.includes(node.name) && null != node.attributes.d) {
-                const computedStyle = computeStyle(stylesheet, node);
-                precision = params.floatPrecision, error = !1 !== precision ? +Math.pow(.1, precision).toFixed(precision) : .01, 
-                roundData = precision > 0 && precision < 20 ? strongRound : round, params.makeArcs && (arcThreshold = params.makeArcs.threshold, 
-                arcTolerance = params.makeArcs.tolerance);
-                const hasMarkerMid = null != computedStyle["marker-mid"], maybeHasStroke = computedStyle.stroke && ("dynamic" === computedStyle.stroke.type || "none" !== computedStyle.stroke.value), maybeHasLinecap = computedStyle["stroke-linecap"] && ("dynamic" === computedStyle["stroke-linecap"].type || "butt" !== computedStyle["stroke-linecap"].value), maybeHasStrokeAndLinecap = maybeHasStroke && maybeHasLinecap;
-                var data = path2js(node);
-                data.length && (params.applyTransforms && applyTransforms(node, data, params), convertToRelative(data), 
-                data = function(path, params, {maybeHasStrokeAndLinecap, hasMarkerMid}) {
-                  var stringify = data2Path.bind(null, params), relSubpoint = [ 0, 0 ], pathBase = [ 0, 0 ], prev = {};
-                  return path = path.filter((function(item, index, path) {
-                    let command = item.command, data = item.args, next = path[index + 1];
-                    if ("Z" !== command && "z" !== command) {
-                      var circle, sdata = data;
-                      if ("s" === command && (sdata = [ 0, 0 ].concat(data), "c" === command || "s" === command)) {
-                        var pdata = prev.args, n = pdata.length;
-                        sdata[0] = pdata[n - 2] - pdata[n - 4], sdata[1] = pdata[n - 1] - pdata[n - 3];
-                      }
-                      if (params.makeArcs && ("c" == command || "s" == command) && isConvex(sdata) && (circle = function(curve) {
-                        var midPoint = getCubicBezierPoint(curve, .5), m1 = [ midPoint[0] / 2, midPoint[1] / 2 ], m2 = [ (midPoint[0] + curve[4]) / 2, (midPoint[1] + curve[5]) / 2 ], center = getIntersection([ m1[0], m1[1], m1[0] + m1[1], m1[1] - m1[0], m2[0], m2[1], m2[0] + (m2[1] - midPoint[1]), m2[1] - (m2[0] - midPoint[0]) ]), radius = center && getDistance([ 0, 0 ], center), tolerance = Math.min(arcThreshold * error, arcTolerance * radius / 100);
-                        if (center && radius < 1e15 && [ 1 / 4, 3 / 4 ].every((function(point) {
-                          return Math.abs(getDistance(getCubicBezierPoint(curve, point), center) - radius) <= tolerance;
-                        }))) return {
-                          center,
-                          radius
-                        };
-                      }(sdata))) {
-                        var nextLonghand, r = roundData([ circle.radius ])[0], angle = findArcAngle(sdata, circle), sweep = sdata[5] * sdata[0] - sdata[4] * sdata[1] > 0 ? 1 : 0, arc = {
-                          command: "a",
-                          args: [ r, r, 0, 0, sweep, sdata[4], sdata[5] ],
-                          coords: item.coords.slice(),
-                          base: item.base
-                        }, output = [ arc ], relCenter = [ circle.center[0] - sdata[4], circle.center[1] - sdata[5] ], relCircle = {
-                          center: relCenter,
-                          radius: circle.radius
-                        }, arcCurves = [ item ], hasPrev = 0, suffix = "";
-                        if ("c" == prev.command && isConvex(prev.args) && isArcPrev(prev.args, circle) || "a" == prev.command && prev.sdata && isArcPrev(prev.sdata, circle)) {
-                          arcCurves.unshift(prev), arc.base = prev.base, arc.args[5] = arc.coords[0] - arc.base[0], 
-                          arc.args[6] = arc.coords[1] - arc.base[1];
-                          var prevData = "a" == prev.command ? prev.sdata : prev.args;
-                          (angle += findArcAngle(prevData, {
-                            center: [ prevData[4] + circle.center[0], prevData[5] + circle.center[1] ],
-                            radius: circle.radius
-                          })) > Math.PI && (arc.args[3] = 1), hasPrev = 1;
-                        }
-                        for (var j = index; (next = path[++j]) && ~"cs".indexOf(next.command); ) {
-                          var nextData = next.args;
-                          if ("s" == next.command && (nextData = (nextLonghand = makeLonghand({
-                            command: "s",
-                            args: next.args.slice()
-                          }, path[j - 1].args)).args, nextLonghand.args = nextData.slice(0, 2), suffix = stringify([ nextLonghand ])), 
-                          !isConvex(nextData) || !isArc(nextData, relCircle)) break;
-                          if ((angle += findArcAngle(nextData, relCircle)) - 2 * Math.PI > .001) break;
-                          if (angle > Math.PI && (arc.args[3] = 1), arcCurves.push(next), !(2 * Math.PI - angle > .001)) {
-                            arc.args[5] = 2 * (relCircle.center[0] - nextData[4]), arc.args[6] = 2 * (relCircle.center[1] - nextData[5]), 
-                            arc.coords = [ arc.base[0] + arc.args[5], arc.base[1] + arc.args[6] ], arc = {
-                              command: "a",
-                              args: [ r, r, 0, 0, sweep, next.coords[0] - arc.coords[0], next.coords[1] - arc.coords[1] ],
-                              coords: next.coords,
-                              base: arc.coords
-                            }, output.push(arc), j++;
-                            break;
-                          }
-                          arc.coords = next.coords, arc.args[5] = arc.coords[0] - arc.base[0], arc.args[6] = arc.coords[1] - arc.base[1], 
-                          relCenter[0] -= nextData[4], relCenter[1] -= nextData[5];
-                        }
-                        if ((stringify(output) + suffix).length < stringify(arcCurves).length) {
-                          if (path[j] && "s" == path[j].command && makeLonghand(path[j], path[j - 1].args), 
-                          hasPrev) {
-                            var prevArc = output.shift();
-                            roundData(prevArc.args), relSubpoint[0] += prevArc.args[5] - prev.args[prev.args.length - 2], 
-                            relSubpoint[1] += prevArc.args[6] - prev.args[prev.args.length - 1], prev.command = "a", 
-                            prev.args = prevArc.args, item.base = prev.coords = prevArc.coords;
-                          }
-                          if (arc = output.shift(), 1 == arcCurves.length ? item.sdata = sdata.slice() : arcCurves.length - 1 - hasPrev > 0 && path.splice.apply(path, [ index + 1, arcCurves.length - 1 - hasPrev ].concat(output)), 
-                          !arc) return !1;
-                          command = "a", data = arc.args, item.coords = arc.coords;
-                        }
-                      }
-                      if (!1 !== precision) {
-                        if ("m" === command || "l" === command || "t" === command || "q" === command || "s" === command || "c" === command) for (var i = data.length; i--; ) data[i] += item.base[i % 2] - relSubpoint[i % 2]; else "h" == command ? data[0] += item.base[0] - relSubpoint[0] : "v" == command ? data[0] += item.base[1] - relSubpoint[1] : "a" == command && (data[5] += item.base[0] - relSubpoint[0], 
-                        data[6] += item.base[1] - relSubpoint[1]);
-                        roundData(data), "h" == command ? relSubpoint[0] += data[0] : "v" == command ? relSubpoint[1] += data[0] : (relSubpoint[0] += data[data.length - 2], 
-                        relSubpoint[1] += data[data.length - 1]), roundData(relSubpoint), "M" !== command && "m" !== command || (pathBase[0] = relSubpoint[0], 
-                        pathBase[1] = relSubpoint[1]);
-                      }
-                      if (params.straightCurves && ("c" === command && isCurveStraightLine(data) || "s" === command && isCurveStraightLine(sdata) ? (next && "s" == next.command && makeLonghand(next, data), 
-                      command = "l", data = data.slice(-2)) : "q" === command && isCurveStraightLine(data) ? (next && "t" == next.command && makeLonghand(next, data), 
-                      command = "l", data = data.slice(-2)) : "t" === command && "q" !== prev.command && "t" !== prev.command ? (command = "l", 
-                      data = data.slice(-2)) : "a" !== command || 0 !== data[0] && 0 !== data[1] || (command = "l", 
-                      data = data.slice(-2))), params.lineShorthands && "l" === command && (0 === data[1] ? (command = "h", 
-                      data.pop()) : 0 === data[0] && (command = "v", data.shift())), params.collapseRepeated && !1 === hasMarkerMid && ("m" === command || "h" === command || "v" === command) && prev.command && command == prev.command.toLowerCase() && ("h" != command && "v" != command || prev.args[0] >= 0 == data[0] >= 0)) return prev.args[0] += data[0], 
-                      "h" != command && "v" != command && (prev.args[1] += data[1]), prev.coords = item.coords, 
-                      path[index] = prev, !1;
-                      if (params.curveSmoothShorthands && prev.command && ("c" === command ? ("c" === prev.command && data[0] === -(prev.args[2] - prev.args[4]) && data[1] === -(prev.args[3] - prev.args[5]) || "s" === prev.command && data[0] === -(prev.args[0] - prev.args[2]) && data[1] === -(prev.args[1] - prev.args[3]) || "c" !== prev.command && "s" !== prev.command && 0 === data[0] && 0 === data[1]) && (command = "s", 
-                      data = data.slice(2)) : "q" === command && ("q" === prev.command && data[0] === prev.args[2] - prev.args[0] && data[1] === prev.args[3] - prev.args[1] || "t" === prev.command && data[2] === prev.args[0] && data[3] === prev.args[1]) && (command = "t", 
-                      data = data.slice(2))), params.removeUseless && !maybeHasStrokeAndLinecap) {
-                        if (("l" === command || "h" === command || "v" === command || "q" === command || "t" === command || "c" === command || "s" === command) && data.every((function(i) {
-                          return 0 === i;
-                        }))) return path[index] = prev, !1;
-                        if ("a" === command && 0 === data[5] && 0 === data[6]) return path[index] = prev, 
-                        !1;
-                      }
-                      item.command = command, item.args = data, prev = item;
-                    } else {
-                      if (relSubpoint[0] = pathBase[0], relSubpoint[1] = pathBase[1], "Z" === prev.command || "z" === prev.command) return !1;
-                      prev = item;
-                    }
-                    return !0;
-                  })), path;
-                }(data, params, {
-                  maybeHasStrokeAndLinecap,
-                  hasMarkerMid
-                }), params.utilizeAbsolute && (data = function(path, params) {
-                  var prev = path[0];
-                  return path = path.filter((function(item, index) {
-                    if (0 == index) return !0;
-                    if ("Z" === item.command || "z" === item.command) return prev = item, !0;
-                    var command = item.command, data = item.args, adata = data.slice();
-                    if ("m" === command || "l" === command || "t" === command || "q" === command || "s" === command || "c" === command) for (var i = adata.length; i--; ) adata[i] += item.base[i % 2]; else "h" == command ? adata[0] += item.base[0] : "v" == command ? adata[0] += item.base[1] : "a" == command && (adata[5] += item.base[0], 
-                    adata[6] += item.base[1]);
-                    roundData(adata);
-                    var absoluteDataStr = cleanupOutData(adata, params), relativeDataStr = cleanupOutData(data, params);
-                    return (params.forceAbsolutePath || absoluteDataStr.length < relativeDataStr.length && !(params.negativeExtraSpace && command == prev.command && prev.command.charCodeAt(0) > 96 && absoluteDataStr.length == relativeDataStr.length - 1 && (data[0] < 0 || /^0\./.test(data[0]) && prev.args[prev.args.length - 1] % 1))) && (item.command = command.toUpperCase(), 
-                    item.args = adata), prev = item, !0;
-                  })), path;
-                }(data, params)), js2path(node, data, params));
-              }
-            }
-          }
-        };
-      };
-      const convertToRelative = pathData => {
-        let start = [ 0, 0 ], cursor = [ 0, 0 ], prevCoords = [ 0, 0 ];
-        for (let i = 0; i < pathData.length; i += 1) {
-          const pathItem = pathData[i];
-          let {command, args} = pathItem;
-          "m" === command && (cursor[0] += args[0], cursor[1] += args[1], start[0] = cursor[0], 
-          start[1] = cursor[1]), "M" === command && (0 !== i && (command = "m"), args[0] -= cursor[0], 
-          args[1] -= cursor[1], cursor[0] += args[0], cursor[1] += args[1], start[0] = cursor[0], 
-          start[1] = cursor[1]), "l" === command && (cursor[0] += args[0], cursor[1] += args[1]), 
-          "L" === command && (command = "l", args[0] -= cursor[0], args[1] -= cursor[1], cursor[0] += args[0], 
-          cursor[1] += args[1]), "h" === command && (cursor[0] += args[0]), "H" === command && (command = "h", 
-          args[0] -= cursor[0], cursor[0] += args[0]), "v" === command && (cursor[1] += args[0]), 
-          "V" === command && (command = "v", args[0] -= cursor[1], cursor[1] += args[0]), 
-          "c" === command && (cursor[0] += args[4], cursor[1] += args[5]), "C" === command && (command = "c", 
-          args[0] -= cursor[0], args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], 
-          args[4] -= cursor[0], args[5] -= cursor[1], cursor[0] += args[4], cursor[1] += args[5]), 
-          "s" === command && (cursor[0] += args[2], cursor[1] += args[3]), "S" === command && (command = "s", 
-          args[0] -= cursor[0], args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], 
-          cursor[0] += args[2], cursor[1] += args[3]), "q" === command && (cursor[0] += args[2], 
-          cursor[1] += args[3]), "Q" === command && (command = "q", args[0] -= cursor[0], 
-          args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], cursor[0] += args[2], 
-          cursor[1] += args[3]), "t" === command && (cursor[0] += args[0], cursor[1] += args[1]), 
-          "T" === command && (command = "t", args[0] -= cursor[0], args[1] -= cursor[1], cursor[0] += args[0], 
-          cursor[1] += args[1]), "a" === command && (cursor[0] += args[5], cursor[1] += args[6]), 
-          "A" === command && (command = "a", args[5] -= cursor[0], args[6] -= cursor[1], cursor[0] += args[5], 
-          cursor[1] += args[6]), "Z" !== command && "z" !== command || (cursor[0] = start[0], 
-          cursor[1] = start[1]), pathItem.command = command, pathItem.args = args, pathItem.base = prevCoords, 
-          pathItem.coords = [ cursor[0], cursor[1] ], prevCoords = pathItem.coords;
-        }
-        return pathData;
-      };
-      function isConvex(data) {
-        var center = getIntersection([ 0, 0, data[2], data[3], data[0], data[1], data[4], data[5] ]);
-        return center && data[2] < center[0] == center[0] < 0 && data[3] < center[1] == center[1] < 0 && data[4] < center[0] == center[0] < data[0] && data[5] < center[1] == center[1] < data[1];
-      }
-      function getIntersection(coords) {
-        var a1 = coords[1] - coords[3], b1 = coords[2] - coords[0], c1 = coords[0] * coords[3] - coords[2] * coords[1], a2 = coords[5] - coords[7], b2 = coords[6] - coords[4], c2 = coords[4] * coords[7] - coords[5] * coords[6], denom = a1 * b2 - a2 * b1;
-        if (denom) {
-          var cross = [ (b1 * c2 - b2 * c1) / denom, (a1 * c2 - a2 * c1) / -denom ];
-          return !isNaN(cross[0]) && !isNaN(cross[1]) && isFinite(cross[0]) && isFinite(cross[1]) ? cross : void 0;
-        }
-      }
-      function strongRound(data) {
-        for (var i = data.length; i-- > 0; ) if (data[i].toFixed(precision) != data[i]) {
-          var rounded = +data[i].toFixed(precision - 1);
-          data[i] = +Math.abs(rounded - data[i]).toFixed(precision + 1) >= error ? +data[i].toFixed(precision) : rounded;
-        }
-        return data;
-      }
-      function round(data) {
-        for (var i = data.length; i-- > 0; ) data[i] = Math.round(data[i]);
-        return data;
-      }
-      function isCurveStraightLine(data) {
-        var i = data.length - 2, a = -data[i + 1], b = data[i], d = 1 / (a * a + b * b);
-        if (i <= 1 || !isFinite(d)) return !1;
-        for (;(i -= 2) >= 0; ) if (Math.sqrt(Math.pow(a * data[i] + b * data[i + 1], 2) * d) > error) return !1;
-        return !0;
-      }
-      function makeLonghand(item, data) {
-        switch (item.command) {
-         case "s":
-          item.command = "c";
-          break;
-
-         case "t":
-          item.command = "q";
-        }
-        return item.args.unshift(data[data.length - 2] - data[data.length - 4], data[data.length - 1] - data[data.length - 3]), 
-        item;
-      }
-      function getDistance(point1, point2) {
-        return Math.hypot(point1[0] - point2[0], point1[1] - point2[1]);
-      }
-      function getCubicBezierPoint(curve, t) {
-        var sqrT = t * t, cubT = sqrT * t, mt = 1 - t, sqrMt = mt * mt;
-        return [ 3 * sqrMt * t * curve[0] + 3 * mt * sqrT * curve[2] + cubT * curve[4], 3 * sqrMt * t * curve[1] + 3 * mt * sqrT * curve[3] + cubT * curve[5] ];
-      }
-      function isArc(curve, circle) {
-        var tolerance = Math.min(arcThreshold * error, arcTolerance * circle.radius / 100);
-        return [ 0, 1 / 4, .5, 3 / 4, 1 ].every((function(point) {
-          return Math.abs(getDistance(getCubicBezierPoint(curve, point), circle.center) - circle.radius) <= tolerance;
-        }));
-      }
-      function isArcPrev(curve, circle) {
-        return isArc(curve, {
-          center: [ circle.center[0] + curve[4], circle.center[1] + curve[5] ],
-          radius: circle.radius
-        });
-      }
-      function findArcAngle(curve, relCircle) {
-        var x1 = -relCircle.center[0], y1 = -relCircle.center[1], x2 = curve[4] - relCircle.center[0], y2 = curve[5] - relCircle.center[1];
-        return Math.acos((x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)));
-      }
-      function data2Path(params, pathData) {
-        return pathData.reduce((function(pathString, item) {
-          var strData = "";
-          return item.args && (strData = cleanupOutData(roundData(item.args.slice()), params)), 
-          pathString + item.command + strData;
-        }), "");
-      }
-    },
     9997: (module, __unused_webpack_exports, __webpack_require__) => {
       "use strict";
       var csstree = __webpack_require__(904), List = csstree.List, stable = __webpack_require__(5235), specificity = __webpack_require__(5509);
@@ -3078,6 +2790,294 @@
         }
       });
     },
+    899: (module, __unused_webpack_exports, __webpack_require__) => {
+      "use strict";
+      const {createPreset} = __webpack_require__(4096), presetDefault = createPreset({
+        name: "presetDefault",
+        plugins: [ __webpack_require__(9776), __webpack_require__(490), __webpack_require__(5013), __webpack_require__(8555), __webpack_require__(8911), __webpack_require__(514), __webpack_require__(7329), __webpack_require__(7854), __webpack_require__(3217), __webpack_require__(9401), __webpack_require__(3506), __webpack_require__(9742), __webpack_require__(2660), __webpack_require__(3268), __webpack_require__(2271), __webpack_require__(2434), __webpack_require__(3657), __webpack_require__(5491), __webpack_require__(9035), __webpack_require__(8203), __webpack_require__(1151), __webpack_require__(3783), __webpack_require__(296), __webpack_require__(1123), __webpack_require__(7407), __webpack_require__(8213), __webpack_require__(6603), __webpack_require__(175), __webpack_require__(4812), __webpack_require__(6045), __webpack_require__(6193), __webpack_require__(3444), __webpack_require__(8541) ]
+      });
+      module.exports = presetDefault;
+    },
+    8986: (__unused_webpack_module, exports) => {
+      "use strict";
+      exports.type = "visitor", exports.name = "removeViewBox", exports.active = !1, exports.description = "removes viewBox attribute when possible";
+      const viewBoxElems = [ "svg", "pattern", "symbol" ];
+      exports.fn = () => ({
+        element: {
+          enter: (node, parentNode) => {
+            if (viewBoxElems.includes(node.name) && null != node.attributes.viewBox && null != node.attributes.width && null != node.attributes.height) {
+              if ("svg" === node.name && "root" !== parentNode.type) return;
+              const nums = node.attributes.viewBox.split(/[ ,]+/g);
+              "0" === nums[0] && "0" === nums[1] && node.attributes.width.replace(/px$/, "") === nums[2] && node.attributes.height.replace(/px$/, "") === nums[3] && delete node.attributes.viewBox;
+            }
+          }
+        }
+      });
+    },
+    7407: (__unused_webpack_module, exports, __webpack_require__) => {
+      "use strict";
+      const {collectStylesheet, computeStyle} = __webpack_require__(1284), {pathElems} = __webpack_require__(6556), {path2js, js2path} = __webpack_require__(3315), {applyTransforms} = __webpack_require__(6101), {cleanupOutData} = __webpack_require__(2199);
+      let roundData, precision, error, arcThreshold, arcTolerance;
+      exports.name = "convertPathData", exports.type = "visitor", exports.active = !0, 
+      exports.description = "optimizes path data: writes in shorter form, applies transformations", 
+      exports.params = {
+        applyTransforms: !0,
+        applyTransformsStroked: !0,
+        makeArcs: {
+          threshold: 2.5,
+          tolerance: .5
+        },
+        straightCurves: !0,
+        lineShorthands: !0,
+        curveSmoothShorthands: !1,
+        floatPrecision: 3,
+        transformPrecision: 5,
+        removeUseless: !0,
+        collapseRepeated: !0,
+        utilizeAbsolute: !0,
+        leadingZero: !0,
+        negativeExtraSpace: !0,
+        noSpaceAfterFlags: !1,
+        forceAbsolutePath: !1
+      }, exports.fn = (root, params) => {
+        const stylesheet = collectStylesheet(root);
+        return {
+          element: {
+            enter: node => {
+              if (pathElems.includes(node.name) && null != node.attributes.d) {
+                const computedStyle = computeStyle(stylesheet, node);
+                precision = params.floatPrecision, error = !1 !== precision ? +Math.pow(.1, precision).toFixed(precision) : .01, 
+                roundData = precision > 0 && precision < 20 ? strongRound : round, params.makeArcs && (arcThreshold = params.makeArcs.threshold, 
+                arcTolerance = params.makeArcs.tolerance);
+                const hasMarkerMid = null != computedStyle["marker-mid"], maybeHasStroke = computedStyle.stroke && ("dynamic" === computedStyle.stroke.type || "none" !== computedStyle.stroke.value), maybeHasLinecap = computedStyle["stroke-linecap"] && ("dynamic" === computedStyle["stroke-linecap"].type || "butt" !== computedStyle["stroke-linecap"].value), maybeHasStrokeAndLinecap = maybeHasStroke && maybeHasLinecap;
+                var data = path2js(node);
+                data.length && (params.applyTransforms && applyTransforms(node, data, params), convertToRelative(data), 
+                data = function(path, params, {maybeHasStrokeAndLinecap, hasMarkerMid}) {
+                  var stringify = data2Path.bind(null, params), relSubpoint = [ 0, 0 ], pathBase = [ 0, 0 ], prev = {};
+                  return path = path.filter((function(item, index, path) {
+                    let command = item.command, data = item.args, next = path[index + 1];
+                    if ("Z" !== command && "z" !== command) {
+                      var circle, sdata = data;
+                      if ("s" === command && (sdata = [ 0, 0 ].concat(data), "c" === command || "s" === command)) {
+                        var pdata = prev.args, n = pdata.length;
+                        sdata[0] = pdata[n - 2] - pdata[n - 4], sdata[1] = pdata[n - 1] - pdata[n - 3];
+                      }
+                      if (params.makeArcs && ("c" == command || "s" == command) && isConvex(sdata) && (circle = function(curve) {
+                        var midPoint = getCubicBezierPoint(curve, .5), m1 = [ midPoint[0] / 2, midPoint[1] / 2 ], m2 = [ (midPoint[0] + curve[4]) / 2, (midPoint[1] + curve[5]) / 2 ], center = getIntersection([ m1[0], m1[1], m1[0] + m1[1], m1[1] - m1[0], m2[0], m2[1], m2[0] + (m2[1] - midPoint[1]), m2[1] - (m2[0] - midPoint[0]) ]), radius = center && getDistance([ 0, 0 ], center), tolerance = Math.min(arcThreshold * error, arcTolerance * radius / 100);
+                        if (center && radius < 1e15 && [ 1 / 4, 3 / 4 ].every((function(point) {
+                          return Math.abs(getDistance(getCubicBezierPoint(curve, point), center) - radius) <= tolerance;
+                        }))) return {
+                          center,
+                          radius
+                        };
+                      }(sdata))) {
+                        var nextLonghand, r = roundData([ circle.radius ])[0], angle = findArcAngle(sdata, circle), sweep = sdata[5] * sdata[0] - sdata[4] * sdata[1] > 0 ? 1 : 0, arc = {
+                          command: "a",
+                          args: [ r, r, 0, 0, sweep, sdata[4], sdata[5] ],
+                          coords: item.coords.slice(),
+                          base: item.base
+                        }, output = [ arc ], relCenter = [ circle.center[0] - sdata[4], circle.center[1] - sdata[5] ], relCircle = {
+                          center: relCenter,
+                          radius: circle.radius
+                        }, arcCurves = [ item ], hasPrev = 0, suffix = "";
+                        if ("c" == prev.command && isConvex(prev.args) && isArcPrev(prev.args, circle) || "a" == prev.command && prev.sdata && isArcPrev(prev.sdata, circle)) {
+                          arcCurves.unshift(prev), arc.base = prev.base, arc.args[5] = arc.coords[0] - arc.base[0], 
+                          arc.args[6] = arc.coords[1] - arc.base[1];
+                          var prevData = "a" == prev.command ? prev.sdata : prev.args;
+                          (angle += findArcAngle(prevData, {
+                            center: [ prevData[4] + circle.center[0], prevData[5] + circle.center[1] ],
+                            radius: circle.radius
+                          })) > Math.PI && (arc.args[3] = 1), hasPrev = 1;
+                        }
+                        for (var j = index; (next = path[++j]) && ~"cs".indexOf(next.command); ) {
+                          var nextData = next.args;
+                          if ("s" == next.command && (nextData = (nextLonghand = makeLonghand({
+                            command: "s",
+                            args: next.args.slice()
+                          }, path[j - 1].args)).args, nextLonghand.args = nextData.slice(0, 2), suffix = stringify([ nextLonghand ])), 
+                          !isConvex(nextData) || !isArc(nextData, relCircle)) break;
+                          if ((angle += findArcAngle(nextData, relCircle)) - 2 * Math.PI > .001) break;
+                          if (angle > Math.PI && (arc.args[3] = 1), arcCurves.push(next), !(2 * Math.PI - angle > .001)) {
+                            arc.args[5] = 2 * (relCircle.center[0] - nextData[4]), arc.args[6] = 2 * (relCircle.center[1] - nextData[5]), 
+                            arc.coords = [ arc.base[0] + arc.args[5], arc.base[1] + arc.args[6] ], arc = {
+                              command: "a",
+                              args: [ r, r, 0, 0, sweep, next.coords[0] - arc.coords[0], next.coords[1] - arc.coords[1] ],
+                              coords: next.coords,
+                              base: arc.coords
+                            }, output.push(arc), j++;
+                            break;
+                          }
+                          arc.coords = next.coords, arc.args[5] = arc.coords[0] - arc.base[0], arc.args[6] = arc.coords[1] - arc.base[1], 
+                          relCenter[0] -= nextData[4], relCenter[1] -= nextData[5];
+                        }
+                        if ((stringify(output) + suffix).length < stringify(arcCurves).length) {
+                          if (path[j] && "s" == path[j].command && makeLonghand(path[j], path[j - 1].args), 
+                          hasPrev) {
+                            var prevArc = output.shift();
+                            roundData(prevArc.args), relSubpoint[0] += prevArc.args[5] - prev.args[prev.args.length - 2], 
+                            relSubpoint[1] += prevArc.args[6] - prev.args[prev.args.length - 1], prev.command = "a", 
+                            prev.args = prevArc.args, item.base = prev.coords = prevArc.coords;
+                          }
+                          if (arc = output.shift(), 1 == arcCurves.length ? item.sdata = sdata.slice() : arcCurves.length - 1 - hasPrev > 0 && path.splice.apply(path, [ index + 1, arcCurves.length - 1 - hasPrev ].concat(output)), 
+                          !arc) return !1;
+                          command = "a", data = arc.args, item.coords = arc.coords;
+                        }
+                      }
+                      if (!1 !== precision) {
+                        if ("m" === command || "l" === command || "t" === command || "q" === command || "s" === command || "c" === command) for (var i = data.length; i--; ) data[i] += item.base[i % 2] - relSubpoint[i % 2]; else "h" == command ? data[0] += item.base[0] - relSubpoint[0] : "v" == command ? data[0] += item.base[1] - relSubpoint[1] : "a" == command && (data[5] += item.base[0] - relSubpoint[0], 
+                        data[6] += item.base[1] - relSubpoint[1]);
+                        roundData(data), "h" == command ? relSubpoint[0] += data[0] : "v" == command ? relSubpoint[1] += data[0] : (relSubpoint[0] += data[data.length - 2], 
+                        relSubpoint[1] += data[data.length - 1]), roundData(relSubpoint), "M" !== command && "m" !== command || (pathBase[0] = relSubpoint[0], 
+                        pathBase[1] = relSubpoint[1]);
+                      }
+                      if (params.straightCurves && ("c" === command && isCurveStraightLine(data) || "s" === command && isCurveStraightLine(sdata) ? (next && "s" == next.command && makeLonghand(next, data), 
+                      command = "l", data = data.slice(-2)) : "q" === command && isCurveStraightLine(data) ? (next && "t" == next.command && makeLonghand(next, data), 
+                      command = "l", data = data.slice(-2)) : "t" === command && "q" !== prev.command && "t" !== prev.command ? (command = "l", 
+                      data = data.slice(-2)) : "a" !== command || 0 !== data[0] && 0 !== data[1] || (command = "l", 
+                      data = data.slice(-2))), params.lineShorthands && "l" === command && (0 === data[1] ? (command = "h", 
+                      data.pop()) : 0 === data[0] && (command = "v", data.shift())), params.collapseRepeated && !1 === hasMarkerMid && ("m" === command || "h" === command || "v" === command) && prev.command && command == prev.command.toLowerCase() && ("h" != command && "v" != command || prev.args[0] >= 0 == data[0] >= 0)) return prev.args[0] += data[0], 
+                      "h" != command && "v" != command && (prev.args[1] += data[1]), prev.coords = item.coords, 
+                      path[index] = prev, !1;
+                      if (params.curveSmoothShorthands && prev.command && ("c" === command ? ("c" === prev.command && data[0] === -(prev.args[2] - prev.args[4]) && data[1] === -(prev.args[3] - prev.args[5]) || "s" === prev.command && data[0] === -(prev.args[0] - prev.args[2]) && data[1] === -(prev.args[1] - prev.args[3]) || "c" !== prev.command && "s" !== prev.command && 0 === data[0] && 0 === data[1]) && (command = "s", 
+                      data = data.slice(2)) : "q" === command && ("q" === prev.command && data[0] === prev.args[2] - prev.args[0] && data[1] === prev.args[3] - prev.args[1] || "t" === prev.command && data[2] === prev.args[0] && data[3] === prev.args[1]) && (command = "t", 
+                      data = data.slice(2))), params.removeUseless && !maybeHasStrokeAndLinecap) {
+                        if (("l" === command || "h" === command || "v" === command || "q" === command || "t" === command || "c" === command || "s" === command) && data.every((function(i) {
+                          return 0 === i;
+                        }))) return path[index] = prev, !1;
+                        if ("a" === command && 0 === data[5] && 0 === data[6]) return path[index] = prev, 
+                        !1;
+                      }
+                      item.command = command, item.args = data, prev = item;
+                    } else {
+                      if (relSubpoint[0] = pathBase[0], relSubpoint[1] = pathBase[1], "Z" === prev.command || "z" === prev.command) return !1;
+                      prev = item;
+                    }
+                    return !0;
+                  })), path;
+                }(data, params, {
+                  maybeHasStrokeAndLinecap,
+                  hasMarkerMid
+                }), params.utilizeAbsolute && (data = function(path, params) {
+                  var prev = path[0];
+                  return path = path.filter((function(item, index) {
+                    if (0 == index) return !0;
+                    if ("Z" === item.command || "z" === item.command) return prev = item, !0;
+                    var command = item.command, data = item.args, adata = data.slice();
+                    if ("m" === command || "l" === command || "t" === command || "q" === command || "s" === command || "c" === command) for (var i = adata.length; i--; ) adata[i] += item.base[i % 2]; else "h" == command ? adata[0] += item.base[0] : "v" == command ? adata[0] += item.base[1] : "a" == command && (adata[5] += item.base[0], 
+                    adata[6] += item.base[1]);
+                    roundData(adata);
+                    var absoluteDataStr = cleanupOutData(adata, params), relativeDataStr = cleanupOutData(data, params);
+                    return (params.forceAbsolutePath || absoluteDataStr.length < relativeDataStr.length && !(params.negativeExtraSpace && command == prev.command && prev.command.charCodeAt(0) > 96 && absoluteDataStr.length == relativeDataStr.length - 1 && (data[0] < 0 || /^0\./.test(data[0]) && prev.args[prev.args.length - 1] % 1))) && (item.command = command.toUpperCase(), 
+                    item.args = adata), prev = item, !0;
+                  })), path;
+                }(data, params)), js2path(node, data, params));
+              }
+            }
+          }
+        };
+      };
+      const convertToRelative = pathData => {
+        let start = [ 0, 0 ], cursor = [ 0, 0 ], prevCoords = [ 0, 0 ];
+        for (let i = 0; i < pathData.length; i += 1) {
+          const pathItem = pathData[i];
+          let {command, args} = pathItem;
+          "m" === command && (cursor[0] += args[0], cursor[1] += args[1], start[0] = cursor[0], 
+          start[1] = cursor[1]), "M" === command && (0 !== i && (command = "m"), args[0] -= cursor[0], 
+          args[1] -= cursor[1], cursor[0] += args[0], cursor[1] += args[1], start[0] = cursor[0], 
+          start[1] = cursor[1]), "l" === command && (cursor[0] += args[0], cursor[1] += args[1]), 
+          "L" === command && (command = "l", args[0] -= cursor[0], args[1] -= cursor[1], cursor[0] += args[0], 
+          cursor[1] += args[1]), "h" === command && (cursor[0] += args[0]), "H" === command && (command = "h", 
+          args[0] -= cursor[0], cursor[0] += args[0]), "v" === command && (cursor[1] += args[0]), 
+          "V" === command && (command = "v", args[0] -= cursor[1], cursor[1] += args[0]), 
+          "c" === command && (cursor[0] += args[4], cursor[1] += args[5]), "C" === command && (command = "c", 
+          args[0] -= cursor[0], args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], 
+          args[4] -= cursor[0], args[5] -= cursor[1], cursor[0] += args[4], cursor[1] += args[5]), 
+          "s" === command && (cursor[0] += args[2], cursor[1] += args[3]), "S" === command && (command = "s", 
+          args[0] -= cursor[0], args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], 
+          cursor[0] += args[2], cursor[1] += args[3]), "q" === command && (cursor[0] += args[2], 
+          cursor[1] += args[3]), "Q" === command && (command = "q", args[0] -= cursor[0], 
+          args[1] -= cursor[1], args[2] -= cursor[0], args[3] -= cursor[1], cursor[0] += args[2], 
+          cursor[1] += args[3]), "t" === command && (cursor[0] += args[0], cursor[1] += args[1]), 
+          "T" === command && (command = "t", args[0] -= cursor[0], args[1] -= cursor[1], cursor[0] += args[0], 
+          cursor[1] += args[1]), "a" === command && (cursor[0] += args[5], cursor[1] += args[6]), 
+          "A" === command && (command = "a", args[5] -= cursor[0], args[6] -= cursor[1], cursor[0] += args[5], 
+          cursor[1] += args[6]), "Z" !== command && "z" !== command || (cursor[0] = start[0], 
+          cursor[1] = start[1]), pathItem.command = command, pathItem.args = args, pathItem.base = prevCoords, 
+          pathItem.coords = [ cursor[0], cursor[1] ], prevCoords = pathItem.coords;
+        }
+        return pathData;
+      };
+      function isConvex(data) {
+        var center = getIntersection([ 0, 0, data[2], data[3], data[0], data[1], data[4], data[5] ]);
+        return center && data[2] < center[0] == center[0] < 0 && data[3] < center[1] == center[1] < 0 && data[4] < center[0] == center[0] < data[0] && data[5] < center[1] == center[1] < data[1];
+      }
+      function getIntersection(coords) {
+        var a1 = coords[1] - coords[3], b1 = coords[2] - coords[0], c1 = coords[0] * coords[3] - coords[2] * coords[1], a2 = coords[5] - coords[7], b2 = coords[6] - coords[4], c2 = coords[4] * coords[7] - coords[5] * coords[6], denom = a1 * b2 - a2 * b1;
+        if (denom) {
+          var cross = [ (b1 * c2 - b2 * c1) / denom, (a1 * c2 - a2 * c1) / -denom ];
+          return !isNaN(cross[0]) && !isNaN(cross[1]) && isFinite(cross[0]) && isFinite(cross[1]) ? cross : void 0;
+        }
+      }
+      function strongRound(data) {
+        for (var i = data.length; i-- > 0; ) if (data[i].toFixed(precision) != data[i]) {
+          var rounded = +data[i].toFixed(precision - 1);
+          data[i] = +Math.abs(rounded - data[i]).toFixed(precision + 1) >= error ? +data[i].toFixed(precision) : rounded;
+        }
+        return data;
+      }
+      function round(data) {
+        for (var i = data.length; i-- > 0; ) data[i] = Math.round(data[i]);
+        return data;
+      }
+      function isCurveStraightLine(data) {
+        var i = data.length - 2, a = -data[i + 1], b = data[i], d = 1 / (a * a + b * b);
+        if (i <= 1 || !isFinite(d)) return !1;
+        for (;(i -= 2) >= 0; ) if (Math.sqrt(Math.pow(a * data[i] + b * data[i + 1], 2) * d) > error) return !1;
+        return !0;
+      }
+      function makeLonghand(item, data) {
+        switch (item.command) {
+         case "s":
+          item.command = "c";
+          break;
+
+         case "t":
+          item.command = "q";
+        }
+        return item.args.unshift(data[data.length - 2] - data[data.length - 4], data[data.length - 1] - data[data.length - 3]), 
+        item;
+      }
+      function getDistance(point1, point2) {
+        return Math.hypot(point1[0] - point2[0], point1[1] - point2[1]);
+      }
+      function getCubicBezierPoint(curve, t) {
+        var sqrT = t * t, cubT = sqrT * t, mt = 1 - t, sqrMt = mt * mt;
+        return [ 3 * sqrMt * t * curve[0] + 3 * mt * sqrT * curve[2] + cubT * curve[4], 3 * sqrMt * t * curve[1] + 3 * mt * sqrT * curve[3] + cubT * curve[5] ];
+      }
+      function isArc(curve, circle) {
+        var tolerance = Math.min(arcThreshold * error, arcTolerance * circle.radius / 100);
+        return [ 0, 1 / 4, .5, 3 / 4, 1 ].every((function(point) {
+          return Math.abs(getDistance(getCubicBezierPoint(curve, point), circle.center) - circle.radius) <= tolerance;
+        }));
+      }
+      function isArcPrev(curve, circle) {
+        return isArc(curve, {
+          center: [ circle.center[0] + curve[4], circle.center[1] + curve[5] ],
+          radius: circle.radius
+        });
+      }
+      function findArcAngle(curve, relCircle) {
+        var x1 = -relCircle.center[0], y1 = -relCircle.center[1], x2 = curve[4] - relCircle.center[0], y2 = curve[5] - relCircle.center[1];
+        return Math.acos((x1 * x2 + y1 * y2) / Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)));
+      }
+      function data2Path(params, pathData) {
+        return pathData.reduce((function(pathString, item) {
+          var strData = "";
+          return item.args && (strData = cleanupOutData(roundData(item.args.slice()), params)), 
+          pathString + item.command + strData;
+        }), "");
+      }
+    },
     5509: module => {
       module.exports = function(simpleSelector) {
         var A = 0, B = 0, C = 0;
@@ -3191,12 +3191,12 @@
   (() => {
     "use strict";
     var exports = __webpack_exports__;
-    exports["preset-default"] = __webpack_require__(2967), exports.addAttributesToSVGElement = __webpack_require__(3963), 
+    exports["preset-default"] = __webpack_require__(899), exports.addAttributesToSVGElement = __webpack_require__(3963), 
     exports.addClassesToSVGElement = __webpack_require__(4886), exports.cleanupAttrs = __webpack_require__(514), 
     exports.cleanupEnableBackground = __webpack_require__(3657), exports.cleanupIDs = __webpack_require__(9401), 
     exports.cleanupListOfValues = __webpack_require__(7458), exports.cleanupNumericValues = __webpack_require__(9742), 
     exports.collapseGroups = __webpack_require__(1123), exports.convertColors = __webpack_require__(2660), 
-    exports.convertEllipseToCircle = __webpack_require__(1151), exports.convertPathData = __webpack_require__(503), 
+    exports.convertEllipseToCircle = __webpack_require__(1151), exports.convertPathData = __webpack_require__(7407), 
     exports.convertShapeToPath = __webpack_require__(8203), exports.convertStyleToAttrs = __webpack_require__(485), 
     exports.convertTransform = __webpack_require__(8213), exports.mergeStyles = __webpack_require__(7329), 
     exports.inlineStyles = __webpack_require__(7854), exports.mergePaths = __webpack_require__(4812), 
@@ -3213,7 +3213,7 @@
     exports.removeScriptElement = __webpack_require__(8456), exports.removeStyleElement = __webpack_require__(9192), 
     exports.removeTitle = __webpack_require__(3444), exports.removeUnknownsAndDefaults = __webpack_require__(3268), 
     exports.removeUnusedNS = __webpack_require__(6045), exports.removeUselessDefs = __webpack_require__(3506), 
-    exports.removeUselessStrokeAndFill = __webpack_require__(2434), exports.removeViewBox = __webpack_require__(8995), 
+    exports.removeUselessStrokeAndFill = __webpack_require__(2434), exports.removeViewBox = __webpack_require__(8986), 
     exports.removeXMLNS = __webpack_require__(9792), exports.removeXMLProcInst = __webpack_require__(490), 
     exports.reusePaths = __webpack_require__(5014), exports.sortAttrs = __webpack_require__(9618), 
     exports.sortDefsChildren = __webpack_require__(6193);
