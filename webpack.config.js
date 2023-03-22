@@ -9,7 +9,7 @@ module.exports = {
   mode: 'production',
   entry: {
     plugins: { import: './node_modules/svgo/plugins/plugins', library: { type: 'commonjs' } },
-    'vendor/css-select': { import: './node_modules/css-select/lib/index', library: { type: 'commonjs' } },
+    'vendor/css-select': { import: './node_modules/css-select/src/index', library: { type: 'commonjs' } },
     'vendor/css-tree': { import: './node_modules/css-tree/lib/syntax/index', library: { type: 'commonjs2' } },
     'vendor/csso': { import: './node_modules/csso/lib/index', library: { type: 'commonjs2' } },
     index: { import: './node_modules/svgo/lib/svgo-node', library: { type: 'commonjs' } },
@@ -35,16 +35,14 @@ module.exports = {
     rules: [
       {
         // transpile ES6-8 into ES5
-        test: /\.m?js$/i,
-        exclude: [
-          /node_modules[\\/](@trysound|stable|css-tree|mdn|source|csso|boolbase)\b/i,
-          /node_modules[\\/](css-(select|what)|nth|dom(handler|utils|elementtype|-serializer)|entities)\b/i,
-        ],
+        test: /\.(m?j|t)s$/i,
+        exclude: /node_modules[\\/](@trysound|stable|css-tree|mdn|source|csso|boolbase)\b/i,
         loader: 'babel-loader',
         options: {
           cacheDirectory: true,
           presets: [
             ['@babel/preset-env', { targets: { node: nodeVersion }, modules: false }], // esmodules
+            ['@babel/preset-typescript', { optimizeConstEnums: true }],
           ],
         },
       },
@@ -109,15 +107,9 @@ if (typeof fs.promises == 'undefined') {
         },
       },
       {
-        test: /node_modules[\\/]entities\b.lib.encode\.js$/i,
+        test: /node_modules[\\/]entities\b.src.encode\.ts$/i,
         loader: 'webpack/lib/replace-loader',
-        options: {
-          multiple: [
-            { search: /^exports\.(?!encodeXML\b)\w+ *=/gm, replace: '//$&' },
-            { search: /= *(exports\.encodeXML *=)/, replace: '\n$1' },
-            { search: /^var (entities_json\w*|inverseHTML|htmlReplacer) *=/gm, replace: '//$&' },
-          ],
-        },
+        options: { search: /\b(const (\w+HTML|html\w+) *=).*;$/gm, replace: '$1 null;' },
       },
       {
         test: /node_modules[\\/]@trysound.sax\b.lib.sax\.js$/i,
@@ -125,17 +117,26 @@ if (typeof fs.promises == 'undefined') {
         options: { search: /^\s*sax\.EVENTS *= *\[[^\[\]]*\];?/m, replace: '/*\n$&\n*/' },
       },
       {
-        test: /node_modules[\\/]css-what\b.lib.parse\.js$/i,
+        test: /node_modules[\\/]css-what\b.src.parse\.ts$/i,
         loader: 'webpack/lib/replace-loader',
-        options: { search: /^exports\.(isTraversal *= *void\b|default *=)/gm, replace: 'exports.parse = $&' },
+        options: { search: /^export default (function parse)\b/m, replace: 'export $1' },
+      },
+      {
+        test: /node_modules[\\/]boolbase\b.index\.js$/i,
+        loader: 'webpack/lib/replace-loader',
+        options: {
+          search: /[\s\S]*/,
+          replace: (m) => ['', ...m.match(/(?<=: *)function [^{}]*\{[^{}]*\}/g)].join('\nexport '),
+        },
       },
     ],
   },
   resolve: {
-    alias: {
-      entities$: __dirname + '/node_modules/entities/lib/encode.js',
-      'css-what$': __dirname + '/node_modules/css-what/lib/parse.js',
-    },
+    extensions: ['.ts', '...'],
+    alias: ['dom-serializer', 'domelementtype', 'domhandler', 'domutils', 'entities', 'nth-check'].reduce(
+      (o, x) => ((o[`${x}$`] = `${__dirname}/node_modules/${x}/src/index.ts`), o),
+      { 'css-what$': __dirname + '/node_modules/css-what/src/parse.ts' }
+    ),
   },
   plugins: [
     new CopyPlugin({

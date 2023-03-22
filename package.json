@@ -1,6 +1,6 @@
 {
   "name": "svgo-cli",
-  "version": "2.8.0",
+  "version": "2.8.0-1",
   "description": "CLI bundle of SVGO, a tool for optimizing SVG vector graphics files",
   "license": "MIT",
   "keywords": [
@@ -38,11 +38,21 @@
   "devDependencies": {
     "@babel/core": "thachnn/webpack-bundle#_babel/core-7.17.10",
     "@babel/preset-env": "thachnn/webpack-bundle#_babel/preset-env-7.17.10",
+    "@babel/preset-typescript": "thachnn/webpack-bundle#_babel/preset-typescript-7.16.7",
     "babel-loader": "thachnn/webpack-bundle#babel-loader-8.2.5",
     "rimraf": "^2.2.8",
     "svgo": "^2.8.0",
     "webpack": "thachnn/webpack-bundle#v5.74.0",
     "webpack-cli": "thachnn/webpack-bundle#cli-4.10.0"
   },
-  "resolutions": {}
+  "resolutions": {
+    "css-select": "fb55/css-select#v4.1.3",
+    "css-what": "fb55/css-what#v5.1.0",
+    "dom-serializer": "cheeriojs/dom-serializer#v1.3.2",
+    "domelementtype": "fb55/domelementtype#v2.2.0",
+    "domhandler": "fb55/domhandler#v4.2.2",
+    "domutils": "fb55/domutils#v2.8.0",
+    "entities": "fb55/entities#v2.2.0",
+    "nth-check": "fb55/nth-check#v2.0.1"
+  }
 }

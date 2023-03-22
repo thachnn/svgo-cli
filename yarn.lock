@@ -10,6 +10,10 @@
   version "7.17.10"
   resolved "https://codeload.github.com/thachnn/webpack-bundle/tar.gz/refs/heads/_babel/preset-env-7.17.10"
 
+"@babel/preset-typescript@thachnn/webpack-bundle#_babel/preset-typescript-7.16.7":
+  version "7.16.7"
+  resolved "https://codeload.github.com/thachnn/webpack-bundle/tar.gz/refs/heads/_babel/preset-typescript-7.16.7"
+
 "@trysound/sax@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
@@ -29,10 +33,9 @@ commander@^7.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-css-select@^4.1.3:
+css-select@^4.1.3, css-select@fb55/css-select#v4.1.3:
   version "4.1.3"
-  resolved "https://registry.yarnpkg.com/css-select/-/css-select-4.1.3.tgz#a70440f70317f2669118ad74ff105e65849c7067"
-  integrity sha512-gT3wBNd9Nj49rAbmtFHj1cljIAOLYSX1nZ8CB7TBO3INYckygm5B7LISU/szY//YmdiSLbJvDLOx9VnMVpMBxA==
+  resolved "https://codeload.github.com/fb55/css-select/tar.gz/refs/tags/v4.1.3"
   dependencies:
     boolbase "^1.0.0"
     css-what "^5.0.0"
@@ -48,10 +51,9 @@ css-tree@^1.1.2, css-tree@^1.1.3:
     mdn-data "2.0.14"
     source-map "^0.6.1"
 
-css-what@^5.0.0:
+css-what@^5.0.0, css-what@fb55/css-what#v5.1.0:
   version "5.1.0"
-  resolved "https://registry.yarnpkg.com/css-what/-/css-what-5.1.0.tgz#3f7b707aadf633baf62c2ceb8579b545bb40f7fe"
-  integrity sha512-arSMRWIIFY0hV8pIxZMEfmMI47Wj3R/aWpZDDxWYCPEiOMv6tfOrnpDtgxBYPEQD4V0Y/958+1TdC3iWTFcUPw==
+  resolved "https://codeload.github.com/fb55/css-what/tar.gz/refs/tags/v5.1.0"
 
 csso@^4.2.0:
   version "4.2.0"
@@ -60,50 +62,44 @@ csso@^4.2.0:
   dependencies:
     css-tree "^1.1.2"
 
-dom-serializer@^1.0.1:
+dom-serializer@^1.0.1, dom-serializer@cheeriojs/dom-serializer#v1.3.2:
   version "1.3.2"
-  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-1.3.2.tgz#6206437d32ceefaec7161803230c7a20bc1b4d91"
-  integrity sha512-5c54Bk5Dw4qAxNOI1pFEizPSjVsx5+bpJKmL2kPn8JhBUq2q09tTCa3mjijun2NfK78NMouDYNMBkOrPZiS+ig==
+  resolved "https://codeload.github.com/cheeriojs/dom-serializer/tar.gz/refs/tags/v1.3.2"
   dependencies:
     domelementtype "^2.0.1"
     domhandler "^4.2.0"
     entities "^2.0.0"
 
-domelementtype@^2.0.1, domelementtype@^2.2.0:
+domelementtype@^2.0.1, domelementtype@^2.2.0, domelementtype@fb55/domelementtype#v2.2.0:
   version "2.2.0"
-  resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-2.2.0.tgz#9a0b6c2782ed6a1c7323d42267183df9bd8b1d57"
-  integrity sha512-DtBMo82pv1dFtUmHyr48beiuq792Sxohr+8Hm9zoxklYPfa6n0Z3Byjj2IV7bmr2IyqClnqEQhfgHJJ5QF0R5A==
+  resolved "https://codeload.github.com/fb55/domelementtype/tar.gz/refs/tags/v2.2.0"
 
-domhandler@^4.2.0:
+domhandler@^4.2.0, domhandler@fb55/domhandler#v4.2.2:
   version "4.2.2"
-  resolved "https://registry.yarnpkg.com/domhandler/-/domhandler-4.2.2.tgz#e825d721d19a86b8c201a35264e226c678ee755f"
-  integrity sha512-PzE9aBMsdZO8TK4BnuJwH0QT41wgMbRzuZrHUcpYncEjmQazq8QEaBWgLG7ZyC/DAZKEgglpIA6j4Qn/HmxS3w==
+  resolved "https://codeload.github.com/fb55/domhandler/tar.gz/refs/tags/v4.2.2"
   dependencies:
     domelementtype "^2.2.0"
 
-domutils@^2.6.0:
+domutils@^2.6.0, domutils@fb55/domutils#v2.8.0:
   version "2.8.0"
-  resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.8.0.tgz#4437def5db6e2d1f5d6ee859bd95ca7d02048135"
-  integrity sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==
+  resolved "https://codeload.github.com/fb55/domutils/tar.gz/refs/tags/v2.8.0"
   dependencies:
     dom-serializer "^1.0.1"
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
 
-entities@^2.0.0:
+entities@^2.0.0, entities@fb55/entities#v2.2.0:
   version "2.2.0"
-  resolved "https://registry.yarnpkg.com/entities/-/entities-2.2.0.tgz#098dc90ebb83d8dffa089d55256b351d34c4da55"
-  integrity sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==
+  resolved "https://codeload.github.com/fb55/entities/tar.gz/refs/tags/v2.2.0"
 
 mdn-data@2.0.14:
   version "2.0.14"
   resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.14.tgz#7113fc4281917d63ce29b43446f701e68c25ba50"
   integrity sha512-dn6wd0uw5GsdswPFfsgMp5NSB0/aDe6fK94YJV/AJDYXL6HVLWBsxeq7js7Ad+mU2K9LAlwpk6kN2D5mwCPVow==
 
-nth-check@^2.0.0:
+nth-check@^2.0.0, nth-check@fb55/nth-check#v2.0.1:
   version "2.0.1"
-  resolved "https://registry.yarnpkg.com/nth-check/-/nth-check-2.0.1.tgz#2efe162f5c3da06a28959fbd3db75dbeea9f0fc2"
-  integrity sha512-it1vE95zF6dTT9lBsYbxvqh0Soy4SPowchj0UBGj/V6cTPnXXtQOPUbhZ6CmGzAD/rW22LQK6E96pcdJXk4A4w==
+  resolved "https://codeload.github.com/fb55/nth-check/tar.gz/refs/tags/v2.0.1"
   dependencies:
     boolbase "^1.0.0"
 
